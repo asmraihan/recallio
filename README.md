@@ -1,36 +1,125 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Recallio - Language Learning Platform
+
+A modern language learning platform focused on German-English-Bangla translations, built with Next.js, TypeScript, and PostgreSQL.
+
+## Features
+
+- 🔐 Authentication with Google OAuth and Email/Password
+- 📚 Word management system with German-English-Bangla translations
+- 🎯 Spaced repetition learning system
+- 📱 Mobile-first responsive design
+- 🌓 Dark/Light theme support
+- 🔍 Advanced search with filters
+- 📊 Progress tracking
+
+## Tech Stack
+
+- **Frontend**: Next.js 14, TypeScript, Tailwind CSS, Shadcn/ui
+- **Backend**: Next.js API Routes
+- **Database**: Neon PostgreSQL with Drizzle ORM
+- **Authentication**: NextAuth.js
+- **Form Handling**: React Hook Form with Zod validation
+- **State Management**: TanStack Query
+- **Styling**: Tailwind CSS
 
 ## Getting Started
 
-First, run the development server:
+### Prerequisites
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+- Node.js 18+ and npm
+- PostgreSQL database (Neon recommended)
+- Google OAuth credentials
+
+### Environment Setup
+
+Create a `.env` file in the root directory with the following variables:
+
+```env
+# Database
+DATABASE_URL="your-neon-postgresql-url"
+
+# NextAuth
+NEXTAUTH_URL="http://localhost:3000"
+NEXTAUTH_SECRET="your-nextauth-secret"
+
+# Google OAuth
+GOOGLE_CLIENT_ID="your-google-client-id"
+GOOGLE_CLIENT_SECRET="your-google-client-secret"
+
+# Node Environment
+NODE_ENV="development"
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### Installation
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/yourusername/recallio.git
+   cd recallio
+   ```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
 
-## Learn More
+3. Set up the database:
+   ```bash
+   npm run db:generate
+   npm run db:migrate
+   ```
 
-To learn more about Next.js, take a look at the following resources:
+4. Start the development server:
+   ```bash
+   npm run dev
+   ```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+The application will be available at `http://localhost:3000`.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Project Structure
 
-## Deploy on Vercel
+```
+src/
+├── app/                 # Next.js app directory
+│   ├── api/            # API routes
+│   ├── auth/           # Authentication pages
+│   └── (routes)/       # Application routes
+├── components/         # React components
+├── lib/               # Utility functions and configurations
+│   ├── db/           # Database configuration and schema
+│   └── auth/         # Authentication utilities
+└── types/            # TypeScript type definitions
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Development
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+### Database Migrations
+
+To create a new migration:
+```bash
+npm run db:generate
+```
+
+To apply migrations:
+```bash
+npm run db:migrate
+```
+
+### Code Style
+
+This project uses ESLint and Prettier for code formatting. To format your code:
+```bash
+npm run format
+```
+
+## Contributing
+
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add some amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
