@@ -1,15 +1,36 @@
-import { Metadata } from "next";
+"use client";
+import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { SignInForm } from "@/components/auth/sign-in-form";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 
-export const metadata: Metadata = {
-  title: "Sign In - Recallio",
-  description: "Sign in to your Recallio account",
-};
-
 export default function SignInPage() {
+  const { status } = useSession();
+  const router = useRouter();
+  const [isRedirecting, setIsRedirecting] = useState(false);
+
+  useEffect(() => {
+    if (status === "authenticated" && !isRedirecting) {
+      setIsRedirecting(true);
+      router.replace("/dashboard");
+    }
+  }, [status, router, isRedirecting]);
+
+  if (status === "loading" || isRedirecting) {
+    return (
+      <div className="flex h-screen w-screen items-center justify-center">
+        <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent"></div>
+      </div>
+    );
+  }
+
+  if (status === "authenticated") {
+    return null;
+  }
+
   return (
     <div className="container flex h-screen w-screen flex-col items-center justify-center">
       <div className="mx-auto flex w-full flex-col justify-center space-y-6 sm:w-[350px]">
