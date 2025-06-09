@@ -1,0 +1,118 @@
+"use client";
+
+import { useState } from "react";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { Button } from "@/components/ui/button";
+import { Pencil, Trash2 } from "lucide-react";
+import { toast } from "sonner";
+
+// Match the database schema
+interface Word {
+  id: string;
+  germanWord: string;
+  englishTranslation: string | null;
+  banglaTranslation: string | null;
+  exampleSentence: string | null;
+  notes: string | null;
+  section: number;
+  createdBy: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+interface WordListProps {
+  words: Word[];
+}
+
+export function WordList({ words }: WordListProps) {
+  const [isDeleting, setIsDeleting] = useState<string | null>(null);
+
+  async function handleDelete(id: string) {
+    try {
+      setIsDeleting(id);
+      const response = await fetch(`/api/words/${id}`, {
+        method: "DELETE",
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to delete word");
+      }
+
+      toast.success("Word deleted successfully");
+      // Refresh the page to update the list
+      window.location.reload();
+    } catch {
+      toast.error("Failed to delete word");
+    } finally {
+      setIsDeleting(null);
+    }
+  }
+
+  return (
+    <div className="rounded-md border overflow-x-auto">
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead>German</TableHead>
+            <TableHead>English</TableHead>
+            <TableHead>Bangla</TableHead>
+            <TableHead>Section</TableHead>
+            <TableHead>Example</TableHead>
+            <TableHead>Notes</TableHead>
+            <TableHead>Created</TableHead>
+            <TableHead className="text-right">Actions</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {words.map((word) => (
+            <TableRow key={word.id}>
+              <TableCell className="font-medium">{word.germanWord}</TableCell>
+              <TableCell>{word.englishTranslation || <span className="text-muted-foreground">N/A</span>}</TableCell>
+              <TableCell>{word.banglaTranslation || <span className="text-muted-foreground">N/A</span>}</TableCell>
+              <TableCell>{word.section}</TableCell>
+              <TableCell>{word.exampleSentence || <span className="text-muted-foreground">N/A</span>}</TableCell>
+              <TableCell>{word.notes || <span className="text-muted-foreground">N/A</span>}</TableCell>
+              <TableCell>{word.createdAt.toLocaleDateString()}</TableCell>
+              <TableCell className="text-right">
+                <div className="flex justify-end gap-2">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => {
+                      // TODO: Implement edit functionality
+                      toast.info("Edit functionality coming soon");
+                    }}
+                  >
+                    <Pencil className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => handleDelete(word.id)}
+                    disabled={isDeleting === word.id}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
+              </TableCell>
+            </TableRow>
+          ))}
+          {words.length === 0 && (
+            <TableRow>
+              <TableCell colSpan={8} className="text-center text-muted-foreground">
+                No words added yet. Start by adding your first word!
+              </TableCell>
+            </TableRow>
+          )}
+        </TableBody>
+      </Table>
+    </div>
+  );
+} 

@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { Sidebar } from "@/components/dashboard/sidebar";
 import { UserNav } from "@/components/dashboard/user-nav";
+import { MobileNav } from "@/components/dashboard/mobile-nav";
 
 export default function DashboardLayout({
   children,
@@ -29,7 +30,7 @@ export default function DashboardLayout({
       <Sidebar />
       <div className="flex flex-1 flex-col">
         <header className="sticky top-0 z-10 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-          <div className="container flex h-14 items-center justify-between py-4">
+          <div className="container flex h-14 items-center justify-between py-4 px-6">
             <h1 className="text-lg font-semibold">Recallio</h1>
             <UserNav user={session?.user} />
           </div>
@@ -37,6 +38,7 @@ export default function DashboardLayout({
         <main className="flex-1 space-y-4 p-8 pt-6">
           {children}
         </main>
+        <MobileNav />
       </div>
     </div>
   );

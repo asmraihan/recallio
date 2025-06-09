@@ -1,4 +1,4 @@
-import { pgTable, uuid, text, timestamp, integer, jsonb } from 'drizzle-orm/pg-core';
+import { pgTable, uuid, text, timestamp, integer, jsonb, varchar } from 'drizzle-orm/pg-core';
 import { relations } from 'drizzle-orm';
 
 export const users = pgTable('users', {
@@ -12,7 +12,7 @@ export const users = pgTable('users', {
 });
 
 export const words = pgTable('words', {
-  id: uuid('id').primaryKey().defaultRandom(),
+  id: uuid('id').defaultRandom().primaryKey(),
   germanWord: text('german_word').notNull(),
   englishTranslation: text('english_translation'),
   banglaTranslation: text('bangla_translation'),
@@ -25,12 +25,14 @@ export const words = pgTable('words', {
 });
 
 export const userWords = pgTable('user_words', {
-  id: uuid('id').primaryKey().defaultRandom(),
-  originalWordId: uuid('original_word_id').references(() => words.id),
-  userId: uuid('user_id').references(() => users.id),
+  id: uuid('id').defaultRandom().primaryKey(),
+  originalWordId: uuid('original_word_id')
+    .notNull()
+    .references(() => words.id),
+  userId: uuid('user_id')
+    .notNull()
+    .references(() => users.id),
   modifications: jsonb('modifications'),
-  createdAt: timestamp('created_at').defaultNow(),
-  updatedAt: timestamp('updated_at').defaultNow(),
 });
 
 // Relations

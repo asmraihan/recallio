@@ -1,0 +1,114 @@
+import { NextResponse } from "next/server";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
+import { db } from "@/lib/db";
+import { words } from "@/lib/db/schema";
+import { z } from "zod";
+import { eq } from "drizzle-orm";
+
+const batchWordSchema = z.object({
+  words: z.array(
+    z.object({
+      germanWord: z.string().min(1, "German word is required"),
+      englishTranslation: z.string().nullable(),
+      banglaTranslation: z.string().nullable(),
+      section: z.number().min(1, "Section must be between 1 and 10").max(10),
+    })
+  ).min(1, "At least one word is required").max(100, "Maximum 100 words allowed"),
+});
+
+export async function POST(req: Request) {
+  try {
+    const session = await getServerSession(authOptions);
+    if (!session?.user?.id) {
+      console.error("Unauthorized: No user session found");
+      return NextResponse.json(
+        { error: "Unauthorized" },
+        { status: 401 }
+      );
+    }
+
+    const body = await req.json();
+    console.log("Received request body:", JSON.stringify(body, null, 2));
+
+    const result = batchWordSchema.safeParse(body);
+    if (!result.success) {
+      console.error("Validation error:", result.error.format());
+      return NextResponse.json(
+        { 
+          error: "Invalid input", 
+          details: result.error.format(),
+          message: "Please check the format of your input data"
+        },
+        { status: 400 }
+      );
+    }
+
+    const { words: wordsToAdd } = result.data;
+    console.log(`Attempting to add ${wordsToAdd.length} words for user ${session.user.id}`);
+
+    // Get all existing words for this user (regardless of section)
+    const existing = await db.select({
+      germanWord: words.germanWord,
+    }).from(words)
+      .where(eq(words.createdBy, session.user.id));
+    const existingSet = new Set(existing.map(e => e.germanWord));
+    const filteredWords = wordsToAdd.filter(w => !existingSet.has(w.germanWord));
+    const skippedCount = wordsToAdd.length - filteredWords.length;
+
+    if (filteredWords.length === 0) {
+      return NextResponse.json({
+        message: `No new words added. All were duplicates.`,
+        added: 0,
+        skipped: skippedCount,
+      });
+    }
+
+    try {
+      const inserted = await db.insert(words).values(
+        filteredWords.map((word) => ({
+          ...word,
+          createdBy: session.user.id,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        }))
+      ).returning();
+
+      console.log(`Successfully inserted ${inserted.length} words`);
+      
+      return NextResponse.json({
+        message: `Added ${inserted.length} new words. Skipped ${skippedCount} duplicate(s).`,
+        added: inserted.length,
+        skipped: skippedCount,
+        words: inserted,
+      });
+    } catch (error) {
+      console.error("Database insert error:", error);
+      // Provide more specific error messages based on the error type
+      if (error instanceof Error) {
+        if (error.message.includes("duplicate key")) {
+          return NextResponse.json(
+            { error: "Some words already exist in your collection" },
+            { status: 409 }
+          );
+        }
+        if (error.message.includes("violates foreign key constraint")) {
+          return NextResponse.json(
+            { error: "Invalid user or section reference" },
+            { status: 400 }
+          );
+        }
+      }
+      throw error; // Re-throw to be caught by outer try-catch
+    }
+  } catch (error) {
+    console.error("Error in batch word addition:", error);
+    return NextResponse.json(
+      { 
+        error: "Failed to add words",
+        details: error instanceof Error ? error.message : "Unknown error occurred"
+      },
+      { status: 500 }
+    );
+  }
+} 
