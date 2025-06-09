@@ -22,7 +22,7 @@ const handler = NextAuth({
       },
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) {
-          throw new Error('Invalid credentials');
+          throw new Error('Email and password are required');
         }
 
         const user = await db.query.users.findFirst({
@@ -30,7 +30,7 @@ const handler = NextAuth({
         });
 
         if (!user || !user.password) {
-          throw new Error('Invalid credentials');
+          throw new Error('No user found with this email');
         }
 
         const isPasswordValid = await bcrypt.compare(
@@ -39,7 +39,7 @@ const handler = NextAuth({
         );
 
         if (!isPasswordValid) {
-          throw new Error('Invalid credentials');
+          throw new Error('Invalid password');
         }
 
         return {
@@ -73,6 +73,7 @@ const handler = NextAuth({
       return token;
     },
   },
+  debug: process.env.NODE_ENV === 'development',
 });
 
 export { handler as GET, handler as POST }; 
