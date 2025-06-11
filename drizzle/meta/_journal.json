@@ -15,6 +15,20 @@
       "when": 1749470485142,
       "tag": "0001_fast_fenris",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1749513286615,
+      "tag": "0002_productive_scourge",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1749543772979,
+      "tag": "0003_nappy_electro",
+      "breakpoints": true
     }
   ]
 }

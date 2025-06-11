@@ -1,0 +1,1 @@
+ALTER TABLE "learning_progress" ADD COLUMN "important" boolean DEFAULT false NOT NULL;
