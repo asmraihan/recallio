@@ -27,7 +27,7 @@ export async function GET() {
       .from(learningSessions)
       .where(eq(learningSessions.userId, session.user.id))
       .orderBy(desc(learningSessions.startedAt))
-      .limit(5);
+      .limit(20);
 
     // Calculate accuracy for each session
     const sessionsWithAccuracy = recentSessions.map((session) => ({

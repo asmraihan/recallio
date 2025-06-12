@@ -59,7 +59,7 @@ export default function LearnPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 md:gap-0">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Learn</h1>
           <p className="text-muted-foreground">
@@ -70,7 +70,7 @@ export default function LearnPage() {
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-        <TabsList>
+        <TabsList className="flex flex-wrap md:flex-nowrap gap-2 md:gap-4">
           <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="progress">Progress</TabsTrigger>
           <TabsTrigger value="sessions">Sessions</TabsTrigger>

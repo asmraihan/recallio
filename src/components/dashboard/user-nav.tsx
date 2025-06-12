@@ -31,11 +31,13 @@ export function UserNav({ user }: UserNavProps) {
           </Avatar>
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent className="w-56" align="end" forceMount>
+      <DropdownMenuContent className="w-56 md:w-64" align="end" forceMount>
         <DropdownMenuLabel className="font-normal">
-          <div className="flex flex-col space-y-1">
-            <p className="text-sm font-medium leading-none">{user?.name}</p>
-            <p className="text-xs leading-none text-muted-foreground">
+          <div className="flex flex-col space-y-1 md:space-y-0 md:flex-row md:items-center md:justify-between">
+            <p className="text-sm font-medium leading-none truncate max-w-[120px] md:max-w-[180px]">
+              {user?.name}
+            </p>
+            <p className="text-xs leading-none text-muted-foreground truncate max-w-[120px] md:max-w-[180px]">
               {user?.email}
             </p>
           </div>
@@ -56,4 +58,4 @@ export function UserNav({ user }: UserNavProps) {
       </DropdownMenuContent>
     </DropdownMenu>
   );
-} 
+}

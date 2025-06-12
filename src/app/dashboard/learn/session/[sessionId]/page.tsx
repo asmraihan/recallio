@@ -245,7 +245,7 @@ export default function LearningSessionPage() {
               <div className="text-green-600">✓ {correctCount} correct</div>
               <div className="text-red-600">✗ {incorrectCount} incorrect</div>
             </div>
-            <Button onClick={() => router.push('/dashboard/learn')}>Back to Learn</Button>
+            <Button onClick={() => router.push('/dashboard')}>Back to Learn</Button>
           </CardContent>
         </Card>
       </div>

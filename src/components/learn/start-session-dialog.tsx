@@ -33,7 +33,7 @@ interface StartSessionDialogProps {
   mode?: SessionMode;
 }
 
-export function StartSessionDialog({ children, mode = "custom" }: StartSessionDialogProps) {
+export function StartSessionDialog({ children, mode = "new" }: StartSessionDialogProps) {
   const router = useRouter();
   const { data: session } = useSession();
   const [open, setOpen] = useState(false);
@@ -115,11 +115,11 @@ export function StartSessionDialog({ children, mode = "custom" }: StartSessionDi
                 <SelectValue placeholder="Select session type" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="review">Review Due Words</SelectItem>
                 <SelectItem value="new">Learn New Words</SelectItem>
                 <SelectItem value="mistakes">Practice Mistakes</SelectItem>
-                <SelectItem value="custom">Custom Session</SelectItem>
+                <SelectItem value="review">Review Due Words</SelectItem>
                 <SelectItem value="important">Important Words</SelectItem>
+                <SelectItem value="custom">Custom Session</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -155,7 +155,7 @@ export function StartSessionDialog({ children, mode = "custom" }: StartSessionDi
               defaultValue={section}
               placeholder="Select sections"
               maxCount={5}
-              // animation={1.5}
+            // animation={1.5}
             />
             {isLoadingSections && (
               <div className="text-sm text-muted-foreground flex items-center gap-2">
