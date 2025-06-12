@@ -24,6 +24,7 @@ import {
 import { Label } from "@/components/ui/label";
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
+import { MultiSelect } from "@/components/multi-select";
 
 type SessionMode = "review" | "new" | "mistakes" | "custom";
 
@@ -38,7 +39,8 @@ export function StartSessionDialog({ children, mode = "custom" }: StartSessionDi
   const [open, setOpen] = useState(false);
   const [sessionType, setSessionType] = useState<SessionMode>(mode);
   const [direction, setDirection] = useState("german_to_english");
-  const [section, setSection] = useState<string>("all");
+  // MultiSelect returns string[]; store as string[] in state
+  const [section, setSection] = useState<string[]>([]);
   const [isStarting, setIsStarting] = useState(false);
 
   // Fetch available sections
@@ -66,7 +68,7 @@ export function StartSessionDialog({ children, mode = "custom" }: StartSessionDi
         body: JSON.stringify({
           type: sessionType,
           direction,
-          section: section === "all" ? undefined : parseInt(section),
+          sections: section.map(Number),
         }),
       });
 
@@ -88,7 +90,7 @@ export function StartSessionDialog({ children, mode = "custom" }: StartSessionDi
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        {children || <Button>Start Learning</Button>}
+        {children || <Button className="cursor-pointer">Start Learning</Button>}
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
@@ -136,37 +138,20 @@ export function StartSessionDialog({ children, mode = "custom" }: StartSessionDi
           </div>
 
           <div className="grid gap-2">
-            <Label htmlFor="section">Section</Label>
-            <Select
-              value={section}
-              onValueChange={setSection}
-              disabled={isLoadingSections}
-            >
-              <SelectTrigger id="section" className="w-full">
-                <SelectValue>
-                  {section === "all" 
-                    ? "All Sections" 
-                    : `Section ${section}`}
-                </SelectValue>
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Sections</SelectItem>
-                {sectionsData?.length > 0 ? (
-                  sectionsData.map((sectionNum: number) => (
-                    <SelectItem 
-                      key={sectionNum} 
-                      value={sectionNum.toString()}
-                    >
-                      Section {sectionNum}
-                    </SelectItem>
-                  ))
-                ) : (
-                  <SelectItem value="no-sections" disabled>
-                    No sections available
-                  </SelectItem>
-                )}
-              </SelectContent>
-            </Select>
+            <Label htmlFor="section">Sections</Label>
+            <MultiSelect
+              options={
+                sectionsData?.map((sectionNum: number) => ({
+                  value: sectionNum.toString(),
+                  label: `Section ${sectionNum}`
+                })) || []
+              }
+              onValueChange={(values) => setSection(values)}
+              defaultValue={section}
+              placeholder="Select sections"
+              maxCount={5}
+              // animation={1.5}
+            />
             {isLoadingSections && (
               <div className="text-sm text-muted-foreground flex items-center gap-2">
                 <Loader2 className="h-4 w-4 animate-spin" />
@@ -180,6 +165,7 @@ export function StartSessionDialog({ children, mode = "custom" }: StartSessionDi
           <Button
             onClick={handleStartSession}
             disabled={isStarting}
+            className="cursor-pointer"
           >
             {isStarting ? (
               <>

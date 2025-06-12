@@ -21,12 +21,18 @@ export async function POST(req: Request) {
       return new NextResponse("Unauthorized", { status: 401 });
     }
 
-    const { type, direction, section } = await req.json();
+    const { type, direction, sections } = await req.json();
 
     // Validate input
     if (!type || !direction) {
       return new NextResponse("Missing required fields", { status: 400 });
     }
+
+    // Helper: section filter
+    const sectionFilter = (col: typeof words.section) =>
+      Array.isArray(sections) && sections.length > 0
+        ? inArray(col, sections.map(Number))
+        : sql`TRUE`;
 
     // Get words based on session type
     let wordsToLearn: Word[] = [];
@@ -47,7 +53,7 @@ export async function POST(req: Request) {
           );
         const dueWordIds = dueWords.map((w) => w.wordId);
         // Debug log
-        console.log("[SESSION REVIEW] dueWordIds:", dueWordIds, "section:", section);
+        console.log("[SESSION REVIEW] dueWordIds:", dueWordIds, "sections:", sections);
         if (dueWordIds.length > 0) {
           wordsToLearn = await db
             .select({
@@ -62,7 +68,7 @@ export async function POST(req: Request) {
               and(
                 eq(words.createdBy, session.user.id),
                 inArray(words.id, dueWordIds),
-                section && section !== "all" && section !== undefined && section !== null ? eq(words.section, section) : sql`TRUE`
+                sectionFilter(words.section)
               )
             )
             .limit(20);
@@ -91,7 +97,7 @@ export async function POST(req: Request) {
             and(
               eq(words.createdBy, session.user.id),
               learnedWordIds.length > 0 ? notInArray(words.id, learnedWordIds) : sql`TRUE`,
-              section ? eq(words.section, section) : sql`TRUE`
+              sectionFilter(words.section)
             )
           )
           .limit(20);
@@ -127,7 +133,7 @@ export async function POST(req: Request) {
               and(
                 eq(words.createdBy, session.user.id),
                 inArray(words.id, mistakeWordIds),
-                section ? eq(words.section, section) : sql`TRUE`
+                sectionFilter(words.section)
               )
             )
             .limit(20);
@@ -148,7 +154,7 @@ export async function POST(req: Request) {
           .where(
             and(
               eq(words.createdBy, session.user.id),
-              section ? eq(words.section, section) : sql`TRUE`
+              sectionFilter(words.section)
             )
           )
           .limit(20);
@@ -170,7 +176,8 @@ export async function POST(req: Request) {
       userId: session.user.id,
       sessionType: type,
       direction,
-      section: section || null,
+      // Store only a single section if one is selected, otherwise null
+      section: Array.isArray(sections) && sections.length === 1 ? sections[0] : null,
       status: "in_progress",
       totalWords: wordsToLearn.length,
       correctAnswers: 0,
