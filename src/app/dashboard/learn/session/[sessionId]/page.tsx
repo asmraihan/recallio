@@ -115,7 +115,8 @@ export default function LearningSessionPage() {
   };
 
   const toggleFlip = () => {
-    if (!currentCard.answered) {
+    // Allow flipping if not answered OR if not on the last unanswered card (i.e., viewing previous cards)
+    if (!currentCard.answered || currentIndex < lastUnansweredIndex) {
       setIsFlipped(prev => !prev);
     }
   };

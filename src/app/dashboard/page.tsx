@@ -175,6 +175,14 @@ export default function LearnPage() {
                   </StartSessionDialog>
                 </Button>
                 <Button variant="outline" className="justify-start cursor-pointer">
+                  <StartSessionDialog mode="randomized">
+                    <span className="flex items-center">
+                      <RefreshCw className="mr-2 h-4 w-4" />
+                      Randomized Session
+                    </span>
+                  </StartSessionDialog>
+                </Button>
+                <Button variant="outline" className="justify-start cursor-pointer">
                   <StartSessionDialog mode="review">
                     <span className="flex items-center">
                       <RefreshCw className="mr-2 h-4 w-4" />

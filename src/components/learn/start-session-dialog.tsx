@@ -26,7 +26,7 @@ import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { MultiSelect } from "@/components/multi-select";
 
-type SessionMode = "review" | "new" | "mistakes" | "custom" | "important";
+type SessionMode = "review" | "new" | "mistakes" | "custom" | "important" | "randomized";
 
 interface StartSessionDialogProps {
   children?: React.ReactNode;
@@ -116,10 +116,12 @@ export function StartSessionDialog({ children, mode = "new" }: StartSessionDialo
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="new">Learn New Words</SelectItem>
+                  <SelectItem value="randomized">Randomized Session</SelectItem>
                 <SelectItem value="mistakes">Practice Mistakes</SelectItem>
                 <SelectItem value="review">Review Due Words</SelectItem>
                 <SelectItem value="important">Important Words</SelectItem>
                 <SelectItem value="custom">Custom Session</SelectItem>
+              
               </SelectContent>
             </Select>
           </div>

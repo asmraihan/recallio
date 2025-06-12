@@ -174,6 +174,28 @@ export async function POST(req: Request) {
         break;
       }
 
+      case "randomized": {
+        // Get a random set of words for the user (optionally filtered by section)
+        wordsToLearn = await db
+          .select({
+            id: words.id,
+            germanWord: words.germanWord,
+            englishTranslation: words.englishTranslation,
+            banglaTranslation: words.banglaTranslation,
+            section: words.section,
+          })
+          .from(words)
+          .where(
+            and(
+              eq(words.createdBy, session.user.id),
+              sectionFilter(words.section)
+            )
+          )
+          .orderBy(sql`RANDOM()`) // Use SQL random order
+          .limit(20);
+        break;
+      }
+
       default:
         wordsToLearn = await db
           .select({
