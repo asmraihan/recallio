@@ -26,7 +26,7 @@ import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { MultiSelect } from "@/components/multi-select";
 
-type SessionMode = "review" | "new" | "mistakes" | "custom";
+type SessionMode = "review" | "new" | "mistakes" | "custom" | "important";
 
 interface StartSessionDialogProps {
   children?: React.ReactNode;
@@ -62,14 +62,18 @@ export function StartSessionDialog({ children, mode = "custom" }: StartSessionDi
 
     setIsStarting(true);
     try {
+      let body: any = {
+        type: sessionType,
+        direction,
+        sections: section.map(Number),
+      };
+      if (sessionType === "important") {
+        body = { type: "important", direction };
+      }
       const response = await fetch("/api/learn/sessions", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          type: sessionType,
-          direction,
-          sections: section.map(Number),
-        }),
+        body: JSON.stringify(body),
       });
 
       if (!response.ok) {
@@ -115,6 +119,7 @@ export function StartSessionDialog({ children, mode = "custom" }: StartSessionDi
                 <SelectItem value="new">Learn New Words</SelectItem>
                 <SelectItem value="mistakes">Practice Mistakes</SelectItem>
                 <SelectItem value="custom">Custom Session</SelectItem>
+                <SelectItem value="important">Important Words</SelectItem>
               </SelectContent>
             </Select>
           </div>

@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useQuery } from "@tanstack/react-query";
-import { Loader2, BookOpen, GraduationCap, RefreshCw, AlertCircle } from "lucide-react";
+import { Loader2, BookOpen, GraduationCap, RefreshCw, AlertCircle, Star } from "lucide-react";
 import { StartSessionDialog } from "@/components/learn/start-session-dialog";
 import { RecentSessions } from "@/components/learn/recent-sessions";
 import { LearningStats } from "@/components/learn/learning-stats";
@@ -88,8 +88,8 @@ export default function LearnPage() {
                 <p className="text-xs text-muted-foreground">
                   Out of {stats?.totalWords || 0} words
                 </p>
-                <Progress 
-                  value={(stats?.masteredWords / stats?.totalWords) * 100 || 0} 
+                <Progress
+                  value={(stats?.masteredWords / stats?.totalWords) * 100 || 0}
                   className="mt-2"
                 />
               </CardContent>
@@ -157,7 +157,24 @@ export default function LearnPage() {
                 </CardDescription>
               </CardHeader>
               <CardContent className="grid gap-2">
-                <Button  variant="outline" className="justify-start cursor-pointer">
+
+                <Button variant="outline" className="justify-start cursor-pointer">
+                  <StartSessionDialog mode="mistakes">
+                    <span className="flex items-center">
+                      <AlertCircle className="mr-2 h-4 w-4" />
+                      Practice Mistakes
+                    </span>
+                  </StartSessionDialog>
+                </Button>
+                <Button variant="outline" className="justify-start cursor-pointer">
+                  <StartSessionDialog mode="new">
+                    <span className="flex items-center">
+                      <BookOpen className="mr-2 h-4 w-4" />
+                      Learn New Words
+                    </span>
+                  </StartSessionDialog>
+                </Button>
+                <Button variant="outline" className="justify-start cursor-pointer">
                   <StartSessionDialog mode="review">
                     <span className="flex items-center">
                       <RefreshCw className="mr-2 h-4 w-4" />
@@ -165,19 +182,11 @@ export default function LearnPage() {
                     </span>
                   </StartSessionDialog>
                 </Button>
-                <Button  variant="outline" className="justify-start cursor-pointer">
-                  <StartSessionDialog mode="new">
-                <span className="flex items-center">
-                      <BookOpen className="mr-2 h-4 w-4" />
-                      Learn New Words
-                    </span>
-                  </StartSessionDialog>
-                </Button>
-                <Button  variant="outline" className="justify-start cursor-pointer">
-                  <StartSessionDialog mode="mistakes">
-             <span className="flex items-center">
-                      <AlertCircle className="mr-2 h-4 w-4" />
-                      Practice Mistakes
+                <Button variant="outline" className="justify-start cursor-pointer">
+                  <StartSessionDialog mode="important" key="important-words" >
+                    <span className="flex items-center">
+                      <Star className="mr-2 h-4 w-4" />
+                      Practice Important Words
                     </span>
                   </StartSessionDialog>
                 </Button>
@@ -194,7 +203,7 @@ export default function LearnPage() {
               <CardContent>
 
                 <RecentSessions />
-           
+
               </CardContent>
             </Card>
           </div>
@@ -213,11 +222,11 @@ export default function LearnPage() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <RecentSessions  />
+              <RecentSessions />
             </CardContent>
           </Card>
         </TabsContent>
-      </Tabs> 
+      </Tabs>
     </div>
   );
 }

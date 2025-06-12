@@ -141,6 +141,39 @@ export async function POST(req: Request) {
         break;
       }
 
+      case "important": {
+        // Get all words marked as important for this user
+        const importantWordIds = await db
+          .select({ wordId: learningProgress.wordId })
+          .from(learningProgress)
+          .where(
+            and(
+              eq(learningProgress.userId, session.user.id),
+              eq(learningProgress.important, true)
+            )
+          );
+        const ids = importantWordIds.map((w) => w.wordId);
+        if (ids.length > 0) {
+          wordsToLearn = await db
+            .select({
+              id: words.id,
+              germanWord: words.germanWord,
+              englishTranslation: words.englishTranslation,
+              banglaTranslation: words.banglaTranslation,
+              section: words.section,
+            })
+            .from(words)
+            .where(
+              and(
+                eq(words.createdBy, session.user.id),
+                inArray(words.id, ids)
+              )
+            )
+            .limit(20);
+        }
+        break;
+      }
+
       default:
         wordsToLearn = await db
           .select({

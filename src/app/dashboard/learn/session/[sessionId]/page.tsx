@@ -100,13 +100,13 @@ export default function LearningSessionPage() {
 
     // If on the last unanswered card, allow answering
     if (currentIndex === lastUnansweredIndex && !currentCard.answered) {
-      if (Math.abs(offset) > 100 || Math.abs(velocity) > 500) {
+      if (Math.abs(offset) > 75 || Math.abs(velocity) > 500) {
         const isCorrect = direction === "left";
         await handleCardAnswer(isCorrect);
       }
     } else if (currentIndex < lastUnansweredIndex) {
       // If on a previous card, swiping returns to last unanswered card (no answer, no DB call)
-      if (Math.abs(offset) > 100 || Math.abs(velocity) > 500) {
+      if (Math.abs(offset) > 75 || Math.abs(velocity) > 500) {
         setCurrentIndex(lastUnansweredIndex);
         setIsFlipped(false);
         setShowContinueHint(false);
@@ -200,8 +200,8 @@ export default function LearningSessionPage() {
   // Show drag feedback on drag
   const handleDrag = (_: unknown, info: { offset: { x: number } }) => {
     if (!currentCard.answered) {
-      if (info.offset.x < -20) setDragFeedback('plus');
-      else if (info.offset.x > 20) setDragFeedback('minus');
+      if (info.offset.x < -75) setDragFeedback('plus');
+      else if (info.offset.x > 75) setDragFeedback('minus');
       else setDragFeedback(null);
     }
   };
