@@ -5,6 +5,11 @@ import { usePathname } from "next/navigation";
 import { BookOpen, ListPlus, GraduationCap, Settings } from "lucide-react";
 
 const navLinks = [
+   {
+    href: "/dashboard",
+    label: "Learn",
+    icon: GraduationCap,
+  },
   {
     href: "/dashboard/words",
     label: "Words",
@@ -14,11 +19,6 @@ const navLinks = [
     href: "/dashboard/words/add",
     label: "Add",
     icon: ListPlus,
-  },
-  {
-    href: "/dashboard/learn",
-    label: "Learn",
-    icon: GraduationCap,
   },
   {
     href: "/dashboard/settings",

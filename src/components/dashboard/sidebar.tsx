@@ -13,10 +13,9 @@ import {
 } from "lucide-react";
 
 const navigation = [
-  { name: "Dashboard", href: "/dashboard", icon: Home },
+  { name: "Dashboard", href: "/dashboard", icon: GraduationCap },
   { name: "My Words", href: "/dashboard/words", icon: BookOpen },
   { name: "Add Words", href: "/dashboard/words/add", icon: ListPlus },
-  { name: "Learn", href: "/dashboard/learn", icon: GraduationCap },
   { name: "Settings", href: "/dashboard/settings", icon: Settings },
 ];
 

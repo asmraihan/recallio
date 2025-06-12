@@ -152,7 +152,12 @@ export function BatchAddForm() {
       }
 
       toast.success(data.message || `Added ${parsedWords.length} words to section ${data.section}`);
-      form.reset();
+      form.reset({
+        pattern: "german-bangla-english",
+        words: "",
+        section: 0,
+      });
+      setSection(0);
       setParsedWords([]);
       setParseError(null);
 

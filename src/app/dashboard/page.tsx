@@ -1,88 +1,232 @@
 "use client";
 
+import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import Link from "next/link";
-import { BookOpen, GraduationCap, ListPlus, Settings } from "lucide-react";
+import { Progress } from "@/components/ui/progress";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useQuery } from "@tanstack/react-query";
+import { Loader2, BookOpen, GraduationCap, RefreshCw, AlertCircle, Star } from "lucide-react";
+import { StartSessionDialog } from "@/components/learn/start-session-dialog";
+import { RecentSessions } from "@/components/learn/recent-sessions";
+import { LearningStats } from "@/components/learn/learning-stats";
 
-export default function DashboardPage() {
+
+export default function LearnPage() {
+  const [activeTab, setActiveTab] = useState("overview");
+
+
+  // Fetch learning progress stats
+  const { data: stats, isLoading: isLoadingStats } = useQuery({
+    queryKey: ["learning-stats"],
+    queryFn: async () => {
+      const response = await fetch("/api/learn/stats");
+      if (!response.ok) throw new Error("Failed to fetch learning stats");
+      return response.json();
+    },
+  });
+
+  const dueWordsCount = stats?.dueWords ?? 0;
+
+  // Fix streak/accuracy naming for stats
+  const learningStreak = stats?.learningStreak ?? 0;
+  const accuracy = stats?.averageAccuracy ?? 0;
+
+  // Fetch due words list (not just count)
+  type DueWord = {
+    id: string;
+    germanWord: string;
+    englishTranslation: string | null;
+    banglaTranslation: string | null;
+    section: number;
+  };
+  const { data: dueWords, isLoading: isLoadingDueWords } = useQuery<DueWord[]>({
+    queryKey: ["due-words-list"],
+    queryFn: async () => {
+      const response = await fetch("/api/learn/due-words");
+      if (!response.ok) throw new Error("Failed to fetch due words");
+      return response.json();
+    },
+  });
+
+  if (isLoadingStats || isLoadingDueWords) {
+    return (
+      <div className="flex h-[50vh] items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
-      <div>
-        <h2 className="text-3xl font-bold tracking-tight">Dashboard</h2>
-        <p className="text-muted-foreground">
-          Welcome to your language learning dashboard
-        </p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">Learn</h1>
+          <p className="text-muted-foreground">
+            Master your German vocabulary with our spaced repetition system
+          </p>
+        </div>
+        <StartSessionDialog />
       </div>
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Words</CardTitle>
-            <BookOpen className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">0</div>
-            <p className="text-xs text-muted-foreground">
-              Words in your collection
-            </p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Learning Progress</CardTitle>
-            <GraduationCap className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">0%</div>
-            <p className="text-xs text-muted-foreground">
-              Mastery level
-            </p>
-          </CardContent>
-        </Card>
-      </div>
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        <Card>
-          <CardHeader>
-            <CardTitle>Quick Actions</CardTitle>
-            <CardDescription>
-              Access your most used features
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="grid gap-2">
-            <Button asChild variant="outline" className="justify-start">
-              <Link href="/dashboard/words/add">
-                <ListPlus className="mr-2 h-4 w-4" />
-                Add New Words
-              </Link>
-            </Button>
-            <Button asChild variant="outline" className="justify-start">
-              <Link href="/dashboard/learn">
-                <GraduationCap className="mr-2 h-4 w-4" />
-                Start Learning
-              </Link>
-            </Button>
-            <Button asChild variant="outline" className="justify-start">
-              <Link href="/dashboard/settings">
-                <Settings className="mr-2 h-4 w-4" />
-                Settings
-              </Link>
-            </Button>
-          </CardContent>
-        </Card>
-        <Card className="md:col-span-2">
-          <CardHeader>
-            <CardTitle>Recent Activity</CardTitle>
-            <CardDescription>
-              Your recent learning activities
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <p className="text-sm text-muted-foreground">
-              No recent activity. Start learning to see your progress!
-            </p>
-          </CardContent>
-        </Card>
-      </div>
+
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
+        <TabsList>
+          <TabsTrigger value="overview">Overview</TabsTrigger>
+          <TabsTrigger value="progress">Progress</TabsTrigger>
+          <TabsTrigger value="sessions">Sessions</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="overview" className="space-y-4">
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Words Mastered</CardTitle>
+                <GraduationCap className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{stats?.masteredWords || 0}</div>
+                <p className="text-xs text-muted-foreground">
+                  Out of {stats?.totalWords || 0} words
+                </p>
+                <Progress
+                  value={(stats?.masteredWords / stats?.totalWords) * 100 || 0}
+                  className="mt-2"
+                />
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Due for Review</CardTitle>
+                <RefreshCw className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{dueWordsCount}</div>
+                <p className="text-xs text-muted-foreground">
+                  Words ready for review
+                </p>
+                {/* Show due words list if available and not loading */}
+                {dueWords && dueWords.length > 0 && (
+                  <ul className="mt-2 text-xs text-muted-foreground max-h-32 overflow-y-auto">
+                    {dueWords.slice(0, 8).map((word) => (
+                      <li key={word.id} className="truncate">{word.germanWord} ({word.englishTranslation || "?"})</li>
+                    ))}
+                    {dueWords.length > 8 && (
+                      <li className="italic">...and {dueWords.length - 8} more</li>
+                    )}
+                  </ul>
+                )}
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Learning Streak</CardTitle>
+                <BookOpen className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{learningStreak}</div>
+                <p className="text-xs text-muted-foreground">
+                  Days of consistent learning
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Accuracy</CardTitle>
+                <AlertCircle className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">
+                  {accuracy ? `${Math.round(accuracy * 100)}%` : "0%"}
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Overall answer accuracy
+                </p>
+              </CardContent>
+            </Card>
+          </div>
+
+          <div className="grid gap-4 md:grid-cols-2">
+            <Card>
+              <CardHeader>
+                <CardTitle>Quick Start</CardTitle>
+                <CardDescription>
+                  Start a new learning session
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="grid gap-2">
+
+                <Button variant="outline" className="justify-start cursor-pointer">
+                  <StartSessionDialog mode="mistakes">
+                    <span className="flex items-center">
+                      <AlertCircle className="mr-2 h-4 w-4" />
+                      Practice Mistakes
+                    </span>
+                  </StartSessionDialog>
+                </Button>
+                <Button variant="outline" className="justify-start cursor-pointer">
+                  <StartSessionDialog mode="new">
+                    <span className="flex items-center">
+                      <BookOpen className="mr-2 h-4 w-4" />
+                      Learn New Words
+                    </span>
+                  </StartSessionDialog>
+                </Button>
+                <Button variant="outline" className="justify-start cursor-pointer">
+                  <StartSessionDialog mode="review">
+                    <span className="flex items-center">
+                      <RefreshCw className="mr-2 h-4 w-4" />
+                      Review Due Words
+                    </span>
+                  </StartSessionDialog>
+                </Button>
+                <Button variant="outline" className="justify-start cursor-pointer">
+                  <StartSessionDialog mode="important" key="important-words" >
+                    <span className="flex items-center">
+                      <Star className="mr-2 h-4 w-4" />
+                      Practice Important Words
+                    </span>
+                  </StartSessionDialog>
+                </Button>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>Recent Sessions</CardTitle>
+                <CardDescription>
+                  Your latest learning activities
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+
+                <RecentSessions />
+
+              </CardContent>
+            </Card>
+          </div>
+        </TabsContent>
+
+        <TabsContent value="progress">
+          <LearningStats />
+        </TabsContent>
+
+        <TabsContent value="sessions">
+          <Card>
+            <CardHeader>
+              <CardTitle>Learning Sessions</CardTitle>
+              <CardDescription>
+                View and manage your learning sessions
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <RecentSessions />
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
     </div>
   );
-} 
+}
