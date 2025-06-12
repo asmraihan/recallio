@@ -11,6 +11,7 @@ import { StartSessionDialog } from "@/components/learn/start-session-dialog";
 import { RecentSessions } from "@/components/learn/recent-sessions";
 import { LearningStats } from "@/components/learn/learning-stats";
 
+
 export default function LearnPage() {
   const [activeTab, setActiveTab] = useState("overview");
 
@@ -25,9 +26,22 @@ export default function LearnPage() {
     },
   });
 
-  // Fetch words due for review
-  const { data: dueWords, isLoading: isLoadingDue } = useQuery({
-    queryKey: ["due-words"],
+  const dueWordsCount = stats?.dueWords ?? 0;
+
+  // Fix streak/accuracy naming for stats
+  const learningStreak = stats?.learningStreak ?? 0;
+  const accuracy = stats?.averageAccuracy ?? 0;
+
+  // Fetch due words list (not just count)
+  type DueWord = {
+    id: string;
+    germanWord: string;
+    englishTranslation: string | null;
+    banglaTranslation: string | null;
+    section: number;
+  };
+  const { data: dueWords, isLoading: isLoadingDueWords } = useQuery<DueWord[]>({
+    queryKey: ["due-words-list"],
     queryFn: async () => {
       const response = await fetch("/api/learn/due-words");
       if (!response.ok) throw new Error("Failed to fetch due words");
@@ -35,8 +49,7 @@ export default function LearnPage() {
     },
   });
 
-
-  if (isLoadingStats || isLoadingDue) {
+  if (isLoadingStats || isLoadingDueWords) {
     return (
       <div className="flex h-[50vh] items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
@@ -88,10 +101,21 @@ export default function LearnPage() {
                 <RefreshCw className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">{dueWords?.length || 0}</div>
+                <div className="text-2xl font-bold">{dueWordsCount}</div>
                 <p className="text-xs text-muted-foreground">
                   Words ready for review
                 </p>
+                {/* Show due words list if available and not loading */}
+                {dueWords && dueWords.length > 0 && (
+                  <ul className="mt-2 text-xs text-muted-foreground max-h-32 overflow-y-auto">
+                    {dueWords.slice(0, 8).map((word) => (
+                      <li key={word.id} className="truncate">{word.germanWord} ({word.englishTranslation || "?"})</li>
+                    ))}
+                    {dueWords.length > 8 && (
+                      <li className="italic">...and {dueWords.length - 8} more</li>
+                    )}
+                  </ul>
+                )}
               </CardContent>
             </Card>
 
@@ -101,7 +125,7 @@ export default function LearnPage() {
                 <BookOpen className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">{stats?.currentStreak || 0}</div>
+                <div className="text-2xl font-bold">{learningStreak}</div>
                 <p className="text-xs text-muted-foreground">
                   Days of consistent learning
                 </p>
@@ -115,7 +139,7 @@ export default function LearnPage() {
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">
-                  {stats?.accuracy ? `${Math.round(stats.accuracy * 100)}%` : "0%"}
+                  {accuracy ? `${Math.round(accuracy * 100)}%` : "0%"}
                 </div>
                 <p className="text-xs text-muted-foreground">
                   Overall answer accuracy
@@ -133,25 +157,25 @@ export default function LearnPage() {
                 </CardDescription>
               </CardHeader>
               <CardContent className="grid gap-2">
-                <Button asChild variant="outline" className="justify-start">
+                <Button  variant="outline" className="justify-start cursor-pointer">
                   <StartSessionDialog mode="review">
-                    <span>
+                    <span className="flex items-center">
                       <RefreshCw className="mr-2 h-4 w-4" />
                       Review Due Words
                     </span>
                   </StartSessionDialog>
                 </Button>
-                <Button asChild variant="outline" className="justify-start">
+                <Button  variant="outline" className="justify-start cursor-pointer">
                   <StartSessionDialog mode="new">
-                    <span>
+                <span className="flex items-center">
                       <BookOpen className="mr-2 h-4 w-4" />
                       Learn New Words
                     </span>
                   </StartSessionDialog>
                 </Button>
-                <Button asChild variant="outline" className="justify-start">
+                <Button  variant="outline" className="justify-start cursor-pointer">
                   <StartSessionDialog mode="mistakes">
-                    <span>
+             <span className="flex items-center">
                       <AlertCircle className="mr-2 h-4 w-4" />
                       Practice Mistakes
                     </span>
@@ -168,7 +192,9 @@ export default function LearnPage() {
                 </CardDescription>
               </CardHeader>
               <CardContent>
+
                 <RecentSessions />
+           
               </CardContent>
             </Card>
           </div>
@@ -194,4 +220,4 @@ export default function LearnPage() {
       </Tabs> 
     </div>
   );
-} 
+}

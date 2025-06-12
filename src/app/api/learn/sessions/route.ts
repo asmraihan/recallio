@@ -46,6 +46,8 @@ export async function POST(req: Request) {
             )
           );
         const dueWordIds = dueWords.map((w) => w.wordId);
+        // Debug log
+        console.log("[SESSION REVIEW] dueWordIds:", dueWordIds, "section:", section);
         if (dueWordIds.length > 0) {
           wordsToLearn = await db
             .select({
@@ -60,7 +62,7 @@ export async function POST(req: Request) {
               and(
                 eq(words.createdBy, session.user.id),
                 inArray(words.id, dueWordIds),
-                section ? eq(words.section, section) : sql`TRUE`
+                section && section !== "all" && section !== undefined && section !== null ? eq(words.section, section) : sql`TRUE`
               )
             )
             .limit(20);
@@ -237,4 +239,4 @@ export async function GET() {
     console.error("[LEARN_SESSIONS_GET]", error);
     return new NextResponse("Internal Error", { status: 500 });
   }
-} 
+}

@@ -123,8 +123,8 @@ export async function GET() {
       averageAccuracy: accuracyStats[0].avgAccuracy || 0,
       sectionProgress: sectionProgress.map((section) => ({
         section: section.section,
-        totalWords: Number(section.totalWords),
-        masteredWords: Number(section.masteredWords),
+        total: Number(section.totalWords),
+        mastered: Number(section.masteredWords),
         masteryPercentage:
           Number(section.totalWords) > 0
             ? (Number(section.masteredWords) / Number(section.totalWords)) * 100
@@ -135,4 +135,4 @@ export async function GET() {
     console.error("[LEARN_STATS_GET]", error);
     return new NextResponse("Internal Error", { status: 500 });
   }
-} 
+}

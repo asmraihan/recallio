@@ -37,10 +37,8 @@ export default function LearningSessionPage() {
   const [incorrectCount, setIncorrectCount] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const [important, setImportant] = useState<Record<string, boolean>>({});
-  const [isMobile, setIsMobile] = useState(false);
   const [showContinueHint, setShowContinueHint] = useState(false);
   const [dragFeedback, setDragFeedback] = useState<null | 'plus' | 'minus'>(null);
-  const [isReturningToCurrent, setIsReturningToCurrent] = useState(false);
   const [lastUnansweredIndex, setLastUnansweredIndex] = useState<number>(0);
 
   const x = useMotionValue(0);
@@ -90,16 +88,6 @@ export default function LearningSessionPage() {
     }
     if (sessionId) fetchSession();
   }, [sessionId]);
-
-  useEffect(() => {
-    const checkMobile = () => {
-      setIsMobile(window.innerWidth < 768);
-    };
-
-    checkMobile();
-    window.addEventListener('resize', checkMobile);
-    return () => window.removeEventListener('resize', checkMobile);
-  }, []);
 
   const handleDragEnd = async (_: unknown, info: { offset: { x: number }, velocity: { x: number } }) => {
     const offset = info.offset.x;

@@ -114,13 +114,16 @@ export function LearningStats() {
         <CardContent>
           <div className="space-y-4">
             {stats.sectionProgress.map((section) => {
-              const progress = Math.round((section.mastered / section.total) * 100) || 0;
+              // Use the correct property names from the frontend type
+              const total = section.total;
+              const mastered = section.mastered;
+              const progress = Math.round((mastered / total) * 100) || 0;
               return (
                 <div key={section.section} className="space-y-2">
                   <div className="flex items-center justify-between">
                     <p className="text-sm font-medium">Section {section.section}</p>
                     <p className="text-sm text-muted-foreground">
-                      {section.mastered}/{section.total} words mastered
+                      {mastered}/{total} words mastered
                     </p>
                   </div>
                   <Progress value={progress} />
@@ -132,4 +135,4 @@ export function LearningStats() {
       </Card>
     </div>
   );
-} 
+}
