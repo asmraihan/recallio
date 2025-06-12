@@ -7,7 +7,7 @@ import { eq, and } from "drizzle-orm";
 
 export async function DELETE(
   req: Request,
-  { params }: { params: { wordId: string } }
+  context: { params: Promise<{ wordId: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -18,7 +18,7 @@ export async function DELETE(
       });
     }
 
-    const { wordId } = params;
+    const { wordId } = await context.params;
 
     // Delete the word only if it belongs to the user
     const result = await db
@@ -46,4 +46,4 @@ export async function DELETE(
       headers: { "Content-Type": "application/json" }
     });
   }
-} 
+}

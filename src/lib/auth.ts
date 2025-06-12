@@ -46,7 +46,7 @@ export const authOptions: AuthOptions = {
           id: user.id,
           email: user.email,
           name: user.name,
-          role: user.role,
+          role: user.role === null ? undefined : user.role,
         };
       },
     }),
@@ -74,4 +74,4 @@ export const authOptions: AuthOptions = {
     },
   },
   debug: process.env.NODE_ENV === 'development',
-}; 
+};

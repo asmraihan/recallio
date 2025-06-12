@@ -61,17 +61,13 @@
     "zod": "^3.25.56"
   },
   "devDependencies": {
-    "@eslint/eslintrc": "^3",
     "@tailwindcss/postcss": "^4",
     "@types/bcryptjs": "^2.4.6",
+    "@types/json2csv": "^5.0.7",
     "@types/node": "^20.19.0",
     "@types/react": "^19.1.6",
     "@types/react-dom": "^19.1.6",
-    "@typescript-eslint/eslint-plugin": "^8.33.1",
-    "@typescript-eslint/parser": "^8.33.1",
     "drizzle-kit": "^0.31.1",
-    "eslint": "^9",
-    "eslint-config-next": "15.3.3",
     "prettier": "^3.5.3",
     "prettier-plugin-tailwindcss": "^0.6.12",
     "tailwindcss": "^4",

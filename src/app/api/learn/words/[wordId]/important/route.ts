@@ -5,10 +5,10 @@ import { db } from "@/lib/db";
 import { learningProgress } from "@/lib/db/schema";
 import { eq, and } from "drizzle-orm";
 
-export async function POST(req: Request, { params }: { params: { wordId: string } }) {
+export async function POST(req: Request, context: { params: Promise<{ wordId: string }> }) {
   const session = await getServerSession(authOptions);
   if (!session?.user?.id) return new NextResponse("Unauthorized", { status: 401 });
-  const { wordId } = params;
+  const { wordId } = await context.params;
   const { important } = await req.json();
 
   // Update or insert learningProgress for this word/user

@@ -1,11 +1,20 @@
 "use client";
 
+import { Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
 export default function AuthErrorPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <AuthErrorContent />
+    </Suspense>
+  );
+}
+
+function AuthErrorContent() {
   const searchParams = useSearchParams();
   const error = searchParams.get("error");
 
@@ -42,4 +51,4 @@ export default function AuthErrorPage() {
       </div>
     </div>
   );
-} 
+}

@@ -16,19 +16,7 @@ export default function BatchAddPage() {
           Add multiple words to your vocabulary collection at once. Choose your input pattern and enter words in the specified format.
         </p>
       </div>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>Add Words in Bulk</CardTitle>
-          <CardDescription>
-            Enter your words in the text area below, following the format instructions.
-            You can add up to 100 words at once.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <BatchAddForm />
-        </CardContent>
-      </Card>
+      <BatchAddForm />
     </div>
   );
 } 

@@ -7,7 +7,7 @@ import { eq, and } from "drizzle-orm";
 
 export async function GET(
   req: Request,
-  { params }: { params: { sessionId: string } }
+  context: { params: Promise<{ sessionId: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -15,7 +15,7 @@ export async function GET(
       return new NextResponse("Unauthorized", { status: 401 });
     }
 
-    const { sessionId } = await params;
+    const { sessionId } = await context.params;
     // Fetch the session
     const [learningSession] = await db
       .select()

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
@@ -21,6 +21,7 @@ import {
 } from "@/components/ui/select";
 import { useRouter } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
+import { Copy } from "lucide-react";
 
 // Define the form schema
 const formSchema = z.object({
@@ -59,13 +60,15 @@ export function BatchAddForm() {
   const [parseError, setParseError] = useState<string | null>(null);
   const [parsedWords, setParsedWords] = useState<ParsedWord[]>([]);
   const [isAdding, setIsAdding] = useState(false);
+  const [section, setSection] = useState(0);
+  const promptRef = useRef<HTMLSpanElement>(null);
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       pattern: "german-bangla-english",
       words: "",
-      section: 1,
+      section: 0, // Set default section to 0
     },
   });
 
@@ -73,7 +76,7 @@ export function BatchAddForm() {
 
   const parseWords = (text: string, currentPattern: FormValues["pattern"]) => {
     setParseError(null);
-    
+
     // Split into lines and clean them
     const lines = text
       .split("\n")
@@ -86,9 +89,9 @@ export function BatchAddForm() {
     lines.forEach((line, index) => {
       // Only accept format: word-word with no spaces
       const parts = line.split("-");
-      
+
       const expectedParts = currentPattern === "german-bangla-english" ? 3 : 2;
-      
+
       if (parts.length !== expectedParts) {
         errors.push(
           `Line ${index + 1}: Invalid format.\n` +
@@ -107,22 +110,12 @@ export function BatchAddForm() {
         return;
       }
 
-      // Check for any spaces in the parts
-      if (parts.some(part => part.includes(" "))) {
-        errors.push(
-          `Line ${index + 1}: No spaces allowed between hyphens.\n` +
-          `Expected: "${patternInstructions[currentPattern].example}"\n` +
-          `Got: "${line}"`
-        );
-        return;
-      }
-
       const [german, second, third] = parts;
-      
+
       words.push({
         germanWord: german.trim(),
         banglaTranslation: currentPattern === "german-english" ? null : second.trim(),
-        englishTranslation: currentPattern === "german-bangla" ? null : 
+        englishTranslation: currentPattern === "german-bangla" ? null :
           currentPattern === "german-english" ? second.trim() : third.trim(),
         section: form.getValues("section"),
       });
@@ -162,7 +155,7 @@ export function BatchAddForm() {
       form.reset();
       setParsedWords([]);
       setParseError(null);
-      
+
       // Refresh the word list
       await queryClient.invalidateQueries({ queryKey: ["words"] });
       router.refresh();
@@ -171,6 +164,24 @@ export function BatchAddForm() {
     } finally {
       setIsAdding(false);
     }
+  };
+
+  const handleCopyPrompt = () => {
+    if (promptRef.current) {
+      const text = promptRef.current.innerText;
+      navigator.clipboard.writeText(text);
+      toast.success("Prompt copied to clipboard!");
+    }
+  };
+
+  // Sync section state with form
+  const handleSectionChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    let value = parseInt(e.target.value);
+    if (isNaN(value) || value < 1) value = 1;
+    setSection(value);
+    form.setValue("section", value, { shouldValidate: true });
+    // Re-parse words to update preview
+    parseWords(form.getValues("words"), pattern);
   };
 
   return (
@@ -209,24 +220,34 @@ export function BatchAddForm() {
                 id="section"
                 type="number"
                 min={1}
-                {...form.register("section", { 
-                  valueAsNumber: true,
-                  onChange: (e) => {
-                    const value = parseInt(e.target.value);
-                    if (value < 1) e.target.value = "1";
-                    form.setValue("section", value);
-                  }
-                })}
+                value={section}
+                onChange={handleSectionChange}
               />
             </div>
           </div>
 
           <Alert>
             <Info className="h-4 w-4" />
-            <AlertDescription>
+            <AlertDescription className="relative">
               {patternInstructions[pattern].description}
               <br />
+              <br />
               Example: {patternInstructions[pattern].example}
+              <br />
+              <br />
+               Prompt: {" "}
+              <span ref={promptRef} className="">
+               "Give me a list of German words followed by Bangla and English translations in this exact format: German-বাংলা-English. Use only two hyphens per line — one between German and Bangla, and one between Bangla and English. Never use extra hyphens, dashes, or slashes inside any translation. Use simple, clean Bangla and English words. Example: Haus-বাড়ি-house. If a word refers to multiple meanings (like 'Eltern'), choose one clear equivalent."
+              </span>
+              <button
+                type="button"
+                onClick={handleCopyPrompt}
+                className="absolute top-0 right-0 p-1 bg-white rounded hover:bg-gray-100 border border-gray-200"
+                aria-label="Copy prompt"
+                tabIndex={0}
+              >
+                <Copy className="h-4 w-4 text-gray-500" />
+              </button>
             </AlertDescription>
           </Alert>
 
@@ -293,4 +314,4 @@ export function BatchAddForm() {
       </CardContent>
     </Card>
   );
-} 
+}
