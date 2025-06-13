@@ -40,6 +40,7 @@ export default function LearningSessionPage() {
   const [showContinueHint, setShowContinueHint] = useState(false);
   const [dragFeedback, setDragFeedback] = useState<null | 'plus' | 'minus'>(null);
   const [lastUnansweredIndex, setLastUnansweredIndex] = useState<number>(0);
+  const [direction, setDirection] = useState<string>("german_to_english");
 
   const x = useMotionValue(0);
   const cardRotate = useTransform(x, [-300, 0, 300], [-45, 0, 45]);
@@ -58,6 +59,7 @@ export default function LearningSessionPage() {
         }
         const data = await res.json();
         const fetchedWords = data.words || [];
+        setDirection(data.session?.direction || "german_to_english");
         setWords(fetchedWords);
         setCards(fetchedWords.map((word: Word & { answeredAt?: string | null, isCorrect?: boolean | null }) => ({
           word,
@@ -348,6 +350,7 @@ export default function LearningSessionPage() {
                   minHeight: 300, // increased from 240
                 }}
               >
+                {/* Card Front */}
                 <motion.div
                   className="absolute inset-0 w-full h-full"
                   style={{
@@ -361,10 +364,14 @@ export default function LearningSessionPage() {
                 >
                   <CardContent className="p-6 flex items-center justify-center min-h-[280px] md:min-h-[340px] lg:min-h-[400px]">
                     <div className="text-2xl font-bold">
-                      {currentCard.word.germanWord}
+                      {direction === "german_to_english" && currentCard.word.germanWord}
+                      {direction === "english_to_german" && currentCard.word.englishTranslation}
+                      {direction === "german_to_bangla" && currentCard.word.germanWord}
+                      {direction === "bangla_to_german" && currentCard.word.banglaTranslation}
                     </div>
                   </CardContent>
                 </motion.div>
+                {/* Card Back */}
                 <motion.div
                   className="absolute inset-0 w-full h-full"
                   style={{
@@ -377,9 +384,37 @@ export default function LearningSessionPage() {
                   transition={{ duration: 0.2, ease: "easeInOut" }}
                 >
                   <CardContent className="p-6 flex flex-col items-center justify-center min-h-[280px] md:min-h-[340px] lg:min-h-[400px]">
-                    <p className="text-2xl font-bold mb-4">{currentCard.word.englishTranslation}</p>
-                    {currentCard.word.banglaTranslation && (
-                      <p className="text-lg text-gray-600">{currentCard.word.banglaTranslation}</p>
+                    {direction === "german_to_english" && (
+                      <>
+                        <p className="text-2xl font-bold mb-4">{currentCard.word.englishTranslation}</p>
+                        {currentCard.word.banglaTranslation && (
+                          <p className="text-lg text-gray-600">{currentCard.word.banglaTranslation}</p>
+                        )}
+                      </>
+                    )}
+                    {direction === "english_to_german" && (
+                      <>
+                        <p className="text-2xl font-bold mb-4">{currentCard.word.germanWord}</p>
+                        {currentCard.word.banglaTranslation && (
+                          <p className="text-lg text-gray-600">{currentCard.word.banglaTranslation}</p>
+                        )}
+                      </>
+                    )}
+                    {direction === "german_to_bangla" && (
+                      <>
+                        <p className="text-2xl font-bold mb-4">{currentCard.word.banglaTranslation}</p>
+                        {currentCard.word.englishTranslation && (
+                          <p className="text-lg text-gray-600">{currentCard.word.englishTranslation}</p>
+                        )}
+                      </>
+                    )}
+                    {direction === "bangla_to_german" && (
+                      <>
+                        <p className="text-2xl font-bold mb-4">{currentCard.word.germanWord}</p>
+                        {currentCard.word.englishTranslation && (
+                          <p className="text-lg text-gray-600">{currentCard.word.englishTranslation}</p>
+                        )}
+                      </>
                     )}
                   </CardContent>
                 </motion.div>
