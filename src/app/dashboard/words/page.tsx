@@ -53,11 +53,11 @@ export default function WordsPage() {
 
   // Fetch sections on mount
   useEffect(() => {
-    fetch("/api/words?sections=true")
+    fetch("/api/words/sections")
       .then(res => res.json())
-      .then((data: number[]) => {
-        setSections(data);
-        if (data.length > 0) setSection(data[0].toString());
+      .then((data: { sections: number[] }) => {
+        setSections(data.sections);
+        if (data.sections.length > 0) setSection(data.sections[0].toString());
       });
   }, []);
 

@@ -81,17 +81,6 @@ export async function GET(req: NextRequest) {
 
     const { searchParams } = new URL(req.url);
     const sectionParam = searchParams.get("section");
-    const sectionsOnly = searchParams.get("sections");
-
-    if (sectionsOnly === "true") {
-      // Return unique sections for this user
-      const userSections = await db
-        .select({ section: words.section })
-        .from(words)
-        .where(eq(words.createdBy, session.user.id));
-      const uniqueSections = Array.from(new Set(userSections.map(w => w.section))).sort((a, b) => a - b);
-      return NextResponse.json(uniqueSections);
-    }
 
     let userWords;
     if (sectionParam) {
@@ -110,32 +99,6 @@ export async function GET(req: NextRequest) {
     return NextResponse.json(userWords);
   } catch (error) {
     console.error("[WORDS_GET]", error);
-    return new NextResponse(JSON.stringify({ error: "Internal error" }), { 
-      status: 500,
-      headers: { "Content-Type": "application/json" }
-    });
-  }
-}
-
-export async function GET_sections() {
-  try {
-    const session = await getServerSession(authOptions);
-    if (!session?.user?.id) {
-      return new NextResponse(JSON.stringify({ error: "Unauthorized" }), { 
-        status: 401,
-        headers: { "Content-Type": "application/json" }
-      });
-    }
-
-    const sections = await db
-      .select({ section: words.section })
-      .from(words)
-      .where(eq(words.createdBy, session.user.id))
-      .orderBy(words.section);
-
-    return NextResponse.json(sections);
-  } catch (error) {
-    console.error("[SECTIONS_GET]", error);
     return new NextResponse(JSON.stringify({ error: "Internal error" }), { 
       status: 500,
       headers: { "Content-Type": "application/json" }

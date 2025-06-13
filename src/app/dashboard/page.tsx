@@ -106,7 +106,7 @@ export default function LearnPage() {
                   Words ready for review
                 </p>
                 {/* Show due words list if available and not loading */}
-                {dueWords && dueWords.length > 0 && (
+                {/* {dueWords && dueWords.length > 0 && (
                   <ul className="mt-2 text-xs text-muted-foreground max-h-32 overflow-y-auto">
                     {dueWords.slice(0, 8).map((word) => (
                       <li key={word.id} className="truncate">{word.germanWord} ({word.englishTranslation || "?"})</li>
@@ -115,7 +115,7 @@ export default function LearnPage() {
                       <li className="italic">...and {dueWords.length - 8} more</li>
                     )}
                   </ul>
-                )}
+                )} */}
               </CardContent>
             </Card>
 

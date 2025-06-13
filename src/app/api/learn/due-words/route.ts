@@ -3,7 +3,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { learningProgress, words } from "@/lib/db/schema";
-import { eq, sql, and } from "drizzle-orm";
+import { eq, sql, and, inArray } from "drizzle-orm";
 
 // GET /api/learn/due-words - Get words due for review
 export async function GET() {
@@ -24,7 +24,9 @@ export async function GET() {
         )
       );
 
-    if (!dueWordIds.length) {
+    const dueIdsArray = dueWordIds.map(w => w.wordId);
+
+    if (!dueIdsArray.length) {
       return NextResponse.json([]);
     }
 
@@ -41,7 +43,7 @@ export async function GET() {
       .where(
         and(
           eq(words.createdBy, session.user.id),
-          sql`id IN (${dueWordIds.map(w => `'${w.wordId}'`).join(",")})`
+          inArray(words.id, dueIdsArray)
         )
       );
 
