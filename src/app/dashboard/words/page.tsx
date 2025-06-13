@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
@@ -47,55 +47,61 @@ interface WordResponse {
 export default function WordsPage() {
   const [search, setSearch] = useState("");
   const [section, setSection] = useState<string>("all");
+  const [sections, setSections] = useState<number[]>([]);
   const [sortBy, setSortBy] = useState<"date" | "word">("date");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
 
+  // Fetch sections on mount
+  useEffect(() => {
+    fetch("/api/words?sections=true")
+      .then(res => res.json())
+      .then((data: number[]) => {
+        setSections(data);
+        if (data.length > 0) setSection(data[0].toString());
+      });
+  }, []);
+
+  // Fetch words for the selected section
   const { data: words = [], isLoading, error, refetch } = useQuery<Word[]>({
-    queryKey: ["words"],
+    queryKey: ["words", section],
     queryFn: async () => {
-      const response = await fetch("/api/words");
-      console.log(response);
+      let url = "/api/words";
+      if (section && section !== "all") {
+        url += `?section=${section}`;
+      }
+      const response = await fetch(url);
       if (!response.ok) {
         const error = await response.json();
         throw new Error(error.error || "Failed to fetch words");
       }
       const data = await response.json() as WordResponse[];
-      // Convert string dates to Date objects
       return data.map((word) => ({
         ...word,
         createdAt: new Date(word.createdAt),
         updatedAt: new Date(word.updatedAt),
       }));
     },
+    enabled: !!section,
     retry: 1,
   });
 
-  // Get unique sections from words
-  const uniqueSections = Array.from(new Set(words.map(word => word.section))).sort((a, b) => a - b);
-
-  const filteredWords = words
-    .filter((word) => {
-      const matchesSearch =
-        word.germanWord.toLowerCase().includes(search.toLowerCase()) ||
-        (word.englishTranslation?.toLowerCase().includes(search.toLowerCase()) ?? false) ||
-        (word.banglaTranslation?.toLowerCase().includes(search.toLowerCase()) ?? false);
-      
-      const matchesSection =
-        section === "all" || word.section.toString() === section;
-
-      return matchesSearch && matchesSection;
-    })
-    .sort((a, b) => {
-      if (sortBy === "date") {
-        return sortOrder === "asc"
-          ? a.createdAt.getTime() - b.createdAt.getTime()
-          : b.createdAt.getTime() - a.createdAt.getTime();
-      } else {
-        return sortOrder === "asc"
-          ? a.germanWord.localeCompare(b.germanWord)
-          : b.germanWord.localeCompare(a.germanWord);
-      }
-    });
+  const filteredWords = words.filter((word) => {
+    const matchesSearch =
+      word.germanWord.toLowerCase().includes(search.toLowerCase()) ||
+      (word.englishTranslation?.toLowerCase().includes(search.toLowerCase()) ?? false) ||
+      (word.banglaTranslation?.toLowerCase().includes(search.toLowerCase()) ?? false);
+    return matchesSearch;
+  }).sort((a, b) => {
+    if (sortBy === "date") {
+      return sortOrder === "asc"
+        ? a.createdAt.getTime() - b.createdAt.getTime()
+        : b.createdAt.getTime() - a.createdAt.getTime();
+    } else {
+      return sortOrder === "asc"
+        ? a.germanWord.localeCompare(b.germanWord)
+        : b.germanWord.localeCompare(a.germanWord);
+    }
+  });
 
   if (error) {
     return (
@@ -148,7 +154,7 @@ export default function WordsPage() {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All Sections</SelectItem>
-              {uniqueSections.map((sectionNum) => (
+              {sections.map((sectionNum) => (
                 <SelectItem key={sectionNum} value={sectionNum.toString()}>
                   Section {sectionNum}
                 </SelectItem>
@@ -192,4 +198,4 @@ export default function WordsPage() {
       )}
     </div>
   );
-} 
+}

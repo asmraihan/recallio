@@ -12,6 +12,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Pencil, Trash2 } from "lucide-react";
 import { toast } from "sonner";
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 // Match the database schema
 interface Word {
@@ -33,6 +34,7 @@ interface WordListProps {
 
 export function WordList({ words }: WordListProps) {
   const [isDeleting, setIsDeleting] = useState<string | null>(null);
+  const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
 
   async function handleDelete(id: string) {
     try {
@@ -52,6 +54,7 @@ export function WordList({ words }: WordListProps) {
       toast.error("Failed to delete word");
     } finally {
       setIsDeleting(null);
+      setPendingDeleteId(null);
     }
   }
 
@@ -95,7 +98,7 @@ export function WordList({ words }: WordListProps) {
                   <Button
                     variant="ghost"
                     size="icon"
-                    onClick={() => handleDelete(word.id)}
+                    onClick={() => setPendingDeleteId(word.id)}
                     disabled={isDeleting === word.id}
                   >
                     <Trash2 className="h-4 w-4" />
@@ -113,6 +116,23 @@ export function WordList({ words }: WordListProps) {
           )}
         </TableBody>
       </Table>
+      {/* Confirm Delete Modal */}
+      <Dialog open={!!pendingDeleteId} onOpenChange={(open) => { if (!open) setPendingDeleteId(null); }}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Delete Word?</DialogTitle>
+          </DialogHeader>
+          <p>Are you sure you want to delete this word? This action cannot be undone.</p>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setPendingDeleteId(null)} disabled={!!isDeleting}>
+              Cancel
+            </Button>
+            <Button variant="destructive" onClick={() => handleDelete(pendingDeleteId!)} disabled={!!isDeleting}>
+              {isDeleting ? "Deleting..." : "Delete"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
-} 
+}

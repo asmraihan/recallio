@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+import { NextResponse, NextRequest } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { db } from "@/lib/db";
@@ -69,7 +69,7 @@ export async function POST(req: Request) {
   }
 }
 
-export async function GET() {
+export async function GET(req: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
     if (!session?.user?.id) {
@@ -79,12 +79,34 @@ export async function GET() {
       });
     }
 
-    const userWords = await db
-      .select()
-      .from(words)
-      .where(eq(words.createdBy, session.user.id))
-      .orderBy(words.createdAt);
+    const { searchParams } = new URL(req.url);
+    const sectionParam = searchParams.get("section");
+    const sectionsOnly = searchParams.get("sections");
 
+    if (sectionsOnly === "true") {
+      // Return unique sections for this user
+      const userSections = await db
+        .select({ section: words.section })
+        .from(words)
+        .where(eq(words.createdBy, session.user.id));
+      const uniqueSections = Array.from(new Set(userSections.map(w => w.section))).sort((a, b) => a - b);
+      return NextResponse.json(uniqueSections);
+    }
+
+    let userWords;
+    if (sectionParam) {
+      userWords = await db
+        .select()
+        .from(words)
+        .where(and(eq(words.createdBy, session.user.id), eq(words.section, Number(sectionParam))))
+        .orderBy(words.createdAt);
+    } else {
+      userWords = await db
+        .select()
+        .from(words)
+        .where(eq(words.createdBy, session.user.id))
+        .orderBy(words.createdAt);
+    }
     return NextResponse.json(userWords);
   } catch (error) {
     console.error("[WORDS_GET]", error);
@@ -93,4 +115,30 @@ export async function GET() {
       headers: { "Content-Type": "application/json" }
     });
   }
-} 
+}
+
+export async function GET_sections() {
+  try {
+    const session = await getServerSession(authOptions);
+    if (!session?.user?.id) {
+      return new NextResponse(JSON.stringify({ error: "Unauthorized" }), { 
+        status: 401,
+        headers: { "Content-Type": "application/json" }
+      });
+    }
+
+    const sections = await db
+      .select({ section: words.section })
+      .from(words)
+      .where(eq(words.createdBy, session.user.id))
+      .orderBy(words.section);
+
+    return NextResponse.json(sections);
+  } catch (error) {
+    console.error("[SECTIONS_GET]", error);
+    return new NextResponse(JSON.stringify({ error: "Internal error" }), { 
+      status: 500,
+      headers: { "Content-Type": "application/json" }
+    });
+  }
+}
