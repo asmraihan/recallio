@@ -21,7 +21,7 @@ export async function POST(req: Request) {
       return new NextResponse("Unauthorized", { status: 401 });
     }
 
-    const { type, direction, sections } = await req.json();
+    const { type, direction, sections, wordCount } = await req.json();
 
     // Validate input
     if (!type || !direction) {
@@ -36,6 +36,17 @@ export async function POST(req: Request) {
 
     // Get words based on session type
     let wordsToLearn: Word[] = [];
+    // Determine limit for custom session
+    let customLimit: number | undefined = 20;
+    if (["randomized", "mistakes", "important"].includes(type) && wordCount) {
+      if (wordCount === "all") {
+        customLimit = undefined;
+      } else {
+        const parsed = parseInt(wordCount, 10);
+        if (!isNaN(parsed) && parsed > 0) customLimit = parsed;
+      }
+    }
+
     switch (type) {
       case "review": {
         // Get words that are due for review
@@ -55,7 +66,7 @@ export async function POST(req: Request) {
         // Debug log
         console.log("[SESSION REVIEW] dueWordIds:", dueWordIds, "sections:", sections);
         if (dueWordIds.length > 0) {
-          wordsToLearn = await db
+          let query = db
             .select({
               id: words.id,
               germanWord: words.germanWord,
@@ -71,7 +82,8 @@ export async function POST(req: Request) {
                 sectionFilter(words.section)
               )
             )
-            .limit(20);
+            .orderBy(sql`RANDOM()`);
+          wordsToLearn = await query.limit(20);
         }
         break;
       }
@@ -100,6 +112,7 @@ export async function POST(req: Request) {
               sectionFilter(words.section)
             )
           )
+          .orderBy(sql`RANDOM()`)
           .limit(20);
         break;
       }
@@ -120,7 +133,7 @@ export async function POST(req: Request) {
           );
         const mistakeWordIds = mistakeWords.map((w) => w.wordId);
         if (mistakeWordIds.length > 0) {
-          wordsToLearn = await db
+          let query = db
             .select({
               id: words.id,
               germanWord: words.germanWord,
@@ -136,7 +149,8 @@ export async function POST(req: Request) {
                 sectionFilter(words.section)
               )
             )
-            .limit(20);
+            .orderBy(sql`RANDOM()`);
+          wordsToLearn = customLimit ? await query.limit(customLimit) : await query;
         }
         break;
       }
@@ -154,7 +168,7 @@ export async function POST(req: Request) {
           );
         const ids = importantWordIds.map((w) => w.wordId);
         if (ids.length > 0) {
-          wordsToLearn = await db
+          let query = db
             .select({
               id: words.id,
               germanWord: words.germanWord,
@@ -166,17 +180,18 @@ export async function POST(req: Request) {
             .where(
               and(
                 eq(words.createdBy, session.user.id),
-                inArray(words.id, ids)
+                inArray(words.id, ids),
+                sectionFilter(words.section)
               )
             )
-            .limit(20);
+            .orderBy(sql`RANDOM()`);
+          wordsToLearn = customLimit ? await query.limit(customLimit) : await query;
         }
         break;
       }
 
       case "randomized": {
-        // Get a random set of words for the user (optionally filtered by section)
-        wordsToLearn = await db
+        let query = db
           .select({
             id: words.id,
             germanWord: words.germanWord,
@@ -191,8 +206,8 @@ export async function POST(req: Request) {
               sectionFilter(words.section)
             )
           )
-          .orderBy(sql`RANDOM()`) // Use SQL random order
-          .limit(20);
+          .orderBy(sql`RANDOM()`);
+        wordsToLearn = customLimit ? await query.limit(customLimit) : await query;
         break;
       }
 
@@ -212,6 +227,7 @@ export async function POST(req: Request) {
               sectionFilter(words.section)
             )
           )
+          .orderBy(sql`RANDOM()`)
           .limit(20);
     }
 
