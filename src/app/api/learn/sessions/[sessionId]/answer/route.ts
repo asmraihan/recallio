@@ -43,7 +43,17 @@ export async function POST(req: Request, context: { params: Promise<{ sessionId:
       incorrectAttempts = progress.incorrectAttempts;
     }
     if (isCorrect) {
-      masteryLevel = Math.min(masteryLevel + 1, intervals.length);
+      // If this is the first correct answer (no previous attempts), set mastery level to 1
+      if (correctAttempts === 0 && incorrectAttempts === 0) {
+        masteryLevel = 1;
+      } else {
+        // Otherwise increment mastery level if the ratio of correct to total attempts is good
+        const totalAttempts = correctAttempts + incorrectAttempts;
+        const correctRatio = correctAttempts / totalAttempts;
+        if (correctRatio >= 0.7) { // If 70% or more answers are correct
+          masteryLevel = Math.min(masteryLevel + 1, intervals.length);
+        }
+      }
       correctAttempts++;
     } else {
       masteryLevel = Math.max(masteryLevel - 1, 0);

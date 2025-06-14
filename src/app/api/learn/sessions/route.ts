@@ -119,17 +119,32 @@ export async function POST(req: Request) {
       }
 
       case "mistakes": {
-        // Get words with low mastery level
+        // Get words that need practice based on:
+        // 1. Low mastery level (< 3)
+        // 2. More incorrect than correct attempts
+        // 3. Poor performance ratio (less than 70% correct)
         const mistakeWords = await db
           .select({
             wordId: learningProgress.wordId,
             masteryLevel: learningProgress.masteryLevel,
+            correctAttempts: learningProgress.correctAttempts,
+            incorrectAttempts: learningProgress.incorrectAttempts,
           })
           .from(learningProgress)
           .where(
             and(
               eq(learningProgress.userId, session.user.id),
-              sql`${learningProgress.masteryLevel} < 3`
+              sql`(
+                ${learningProgress.masteryLevel} < 3 
+                AND (
+                  ${learningProgress.incorrectAttempts} > ${learningProgress.correctAttempts}
+                  OR (
+                    ${learningProgress.correctAttempts} + ${learningProgress.incorrectAttempts} > 0
+                    AND CAST(${learningProgress.correctAttempts} AS FLOAT) / 
+                    (${learningProgress.correctAttempts} + ${learningProgress.incorrectAttempts}) < 0.7
+                  )
+                )
+              )`
             )
           );
         const mistakeWordIds = mistakeWords.map((w) => w.wordId);
