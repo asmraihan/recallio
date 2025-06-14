@@ -48,7 +48,8 @@ export async function GET(req: Request, context: { params: Promise<{ wordId: str
 
 
 // PATCH and GET (single) for /api/words/[wordId]
-export async function PATCH(req: Request, { params }: { params: { wordId: string } }) {
+export async function PATCH( req: Request,
+  context: { params: Promise<{ wordId: string }> }) {
   try {
     const session = await getServerSession(authOptions);
     if (!session?.user?.id) {
@@ -57,7 +58,7 @@ export async function PATCH(req: Request, { params }: { params: { wordId: string
         headers: { "Content-Type": "application/json" }
       });
     }
-    const { wordId } = params;
+    const { wordId } = await context.params;
     const body = await req.json();
     const validatedData = wordSchema.parse(body);
 
