@@ -23,6 +23,7 @@ export async function GET() {
         correctAnswers: learningSessions.correctAnswers,
         incorrectAnswers: learningSessions.incorrectAnswers,
         status: learningSessions.status,
+        sections: learningSessions.sections, // include all sections
       })
       .from(learningSessions)
       .where(eq(learningSessions.userId, session.user.id))
@@ -45,4 +46,4 @@ export async function GET() {
     console.error("[LEARN_SESSIONS_RECENT_GET]", error);
     return new NextResponse("Internal Error", { status: 500 });
   }
-} 
+}

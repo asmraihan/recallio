@@ -50,6 +50,7 @@ export async function POST(req: Request) {
     switch (type) {
       case "review": {
         // Get words that are due for review
+        console.log("[SESSION REVIEW] Fetching due words for review session");
         const dueWords = await db
           .select({
             wordId: learningProgress.wordId,
@@ -247,8 +248,7 @@ export async function POST(req: Request) {
       userId: session.user.id,
       sessionType: type,
       direction,
-      // Store only a single section if one is selected, otherwise null
-      section: Array.isArray(sections) && sections.length === 1 ? sections[0] : null,
+      sections: Array.isArray(sections) ? sections.map(Number) : [],
       status: "in_progress",
       totalWords: wordsToLearn.length,
       correctAnswers: 0,
@@ -295,6 +295,7 @@ export async function GET() {
         correctAnswers: learningSessions.correctAnswers,
         incorrectAnswers: learningSessions.incorrectAnswers,
         status: learningSessions.status,
+        sections: learningSessions.sections, // include all sections
       })
       .from(learningSessions)
       .where(eq(learningSessions.userId, session.user.id))

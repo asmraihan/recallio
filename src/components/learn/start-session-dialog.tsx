@@ -139,30 +139,40 @@ export function StartSessionDialog({ children, mode = "new" }: StartSessionDialo
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="new">Learn New Words</SelectItem>
-                <SelectItem value="randomized">Randomized Session</SelectItem>
+                {/* <SelectItem value="randomized">Randomized Session</SelectItem> */}
                 <SelectItem value="mistakes">Practice Mistakes</SelectItem>
                 <SelectItem value="review">Review Due Words</SelectItem>
-                <SelectItem value="important">Important Words</SelectItem>
+                {/* <SelectItem value="important">Important Words</SelectItem> */}
                 <SelectItem value="custom">Custom Session</SelectItem>
               </SelectContent>
             </Select>
           </div>
           {sessionType === "custom" && (
-            <div className="grid gap-4 border p-4 rounded-md bg-muted/30">
-              <div className="grid gap-2">
+            <div className="flex flex-col gap-4 border p-4 rounded-md bg-muted/30">
+              <div className="flex flex-col gap-2">
                 <Label>Custom Session Mode</Label>
-                <RadioGroup value={customMode} onValueChange={value => setCustomMode(value as "randomized" | "mistakes" | "important")} className="flex gap-4">
-                  <RadioGroupItem value="randomized" id="custom-randomized" />
-                  <Label htmlFor="custom-randomized">Randomized</Label>
-                  <RadioGroupItem value="mistakes" id="custom-mistakes" />
-                  <Label htmlFor="custom-mistakes">Mistakes</Label>
-                  <RadioGroupItem value="important" id="custom-important" />
-                  <Label htmlFor="custom-important">Important</Label>
+                <RadioGroup
+                  value={customMode}
+                  onValueChange={value => setCustomMode(value as "randomized" | "mistakes" | "important")}
+                  className="flex flex-col sm:flex-row gap-2 sm:gap-4"
+                >
+                  <div className="flex items-center gap-2">
+                    <RadioGroupItem value="randomized" id="custom-randomized" />
+                    <Label htmlFor="custom-randomized">Randomized</Label>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <RadioGroupItem value="mistakes" id="custom-mistakes" />
+                    <Label htmlFor="custom-mistakes">Mistakes</Label>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <RadioGroupItem value="important" id="custom-important" />
+                    <Label htmlFor="custom-important">Important</Label>
+                  </div>
                 </RadioGroup>
               </div>
-              <div className="grid gap-2">
+              <div className="flex flex-col gap-2 w-full max-w-xs">
                 <Label htmlFor="custom-word-count">Number of Words</Label>
-                <div className="flex items-center gap-2">
+                <div className="flex flex-col sm:flex-row items-stretch gap-2 w-full">
                   <Input
                     id="custom-word-count"
                     type="number"
@@ -172,9 +182,9 @@ export function StartSessionDialog({ children, mode = "new" }: StartSessionDialo
                       setCustomWordCount(e.target.value);
                       setSelectAll(false);
                     }}
-                    placeholder="e.g. 20(default)"
+                    placeholder="e.g. 20 (default)"
                     disabled={selectAll}
-                    className="w-32"
+                    className="w-full sm:w-32"
                   />
                   <Button
                     type="button"
@@ -183,6 +193,7 @@ export function StartSessionDialog({ children, mode = "new" }: StartSessionDialo
                       setSelectAll(!selectAll);
                       if (!selectAll) setCustomWordCount("");
                     }}
+                    className="w-full sm:w-auto"
                   >
                     {selectAll ? "All" : "Select All"}
                   </Button>

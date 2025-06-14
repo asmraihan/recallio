@@ -64,8 +64,8 @@ export const learningSessions = pgTable('learning_sessions', {
   sessionType: text('session_type').notNull(),
   // Learning direction for this session
   direction: text('direction').notNull(),
-  // Section filter (if any)
-  section: integer('section'),
+  // Section filter (if any) - now supports multiple sections
+  sections: jsonb('sections').default([]),
   // Session status: "in_progress", "completed", "abandoned"
   status: text('status').notNull().default('in_progress'),
   // Session statistics
@@ -144,4 +144,4 @@ export const sessionWordsRelations = relations(sessionWords, ({ one }) => ({
     fields: [sessionWords.wordId],
     references: [words.id],
   }),
-})); 
+}));

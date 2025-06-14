@@ -17,6 +17,7 @@ interface Session {
   correctAnswers: number;
   accuracy: number;
   duration: number | null;
+  sections?: number[];
 }
 
 export function RecentSessions() {
@@ -60,45 +61,54 @@ export function RecentSessions() {
 
   return (
     <ScrollArea className="h-[50vh]">
-      <div className="space-y-4">
+      <div className="space-y-3">
         {sessions.map((session) => (
           <div
             key={session.id}
-            className="flex items-center justify-between rounded-lg border p-4 cursor-pointer hover:bg-accent/40 transition"
+            className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 rounded-xl border p-3 bg-card shadow-sm cursor-pointer hover:bg-accent/60 transition"
             onClick={() => {
               if (!session.completedAt) {
                 router.push(`/dashboard/learn/session/${session.id}`);
               }
             }}
           >
-            <div className="space-y-1">
-              <p className="font-medium">
-                {session.type.charAt(0).toUpperCase() + session.type.slice(1)} Session
-              </p>
-              <p className="text-sm text-muted-foreground">
-                {session.direction.replace(/_/g, " ").replace(/\b\w/g, (l) => l.toUpperCase())}
-              </p>
-              <p className="text-sm text-muted-foreground">
-                {formatDistanceToNow(new Date(session.startedAt), { addSuffix: true })}
-              </p>
+            <div className="flex-1 min-w-0">
+              <div className="flex flex-wrap items-center gap-2 mb-1">
+                <span className="font-semibold text-base">
+                  {session.type.charAt(0).toUpperCase() + session.type.slice(1)}
+                </span>
+                <span className="text-xs px-2 py-0.5 rounded bg-muted text-muted-foreground">
+                  {session.direction.replace(/_/g, " ").replace(/\b\w/g, (l) => l.toUpperCase())}
+                </span>
+                {Array.isArray(session.sections) && session.sections.length > 0 ? (
+                  <span className="text-xs px-2 py-0.5 rounded bg-primary/10 text-primary font-medium">
+                    Section{session.sections.length > 1 ? 's' : ''}: {session.sections.join(", ")}
+                  </span>
+                ) : (
+                  <span className="text-xs px-2 py-0.5 rounded bg-muted text-muted-foreground opacity-60">
+                    No section
+                  </span>
+                )}
+              </div>
+              <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+                <span>{formatDistanceToNow(new Date(session.startedAt), { addSuffix: true })}</span>
+                {session.completedAt && session.duration !== null && (
+                  <span>• {Math.round(session.duration / 60)} min</span>
+                )}
+              </div>
             </div>
-            <div className="text-right">
+            <div className="flex flex-col items-end min-w-[90px]">
               {session.completedAt ? (
                 <>
-                  <p className="font-medium">
+                  <span className="font-semibold text-sm">
                     {session.correctAnswers}/{session.totalWords} correct
-                  </p>
-                  <p className="text-sm text-muted-foreground">
+                  </span>
+                  <span className="text-xs text-muted-foreground">
                     {Math.round(session.accuracy * 100)}% accuracy
-                  </p>
-                  {session.duration && (
-                    <p className="text-sm text-muted-foreground">
-                      {Math.round(session.duration / 60)} minutes
-                    </p>
-                  )}
+                  </span>
                 </>
               ) : (
-                <p className="text-sm text-primary font-semibold">In progress (click to continue)</p>
+                <span className="text-xs text-primary font-semibold">In progress</span>
               )}
             </div>
           </div>

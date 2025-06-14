@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useQuery } from "@tanstack/react-query";
-import { Loader2, BookOpen, GraduationCap, RefreshCw, AlertCircle, Star } from "lucide-react";
+import { Loader2, BookOpen, GraduationCap, RefreshCw, AlertCircle, Star, PenLine } from "lucide-react";
 import { StartSessionDialog } from "@/components/learn/start-session-dialog";
 import { RecentSessions } from "@/components/learn/recent-sessions";
 import { LearningStats } from "@/components/learn/learning-stats";
@@ -68,6 +68,59 @@ export default function LearnPage() {
         </div>
         <StartSessionDialog />
       </div>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Quick Start</CardTitle>
+          <CardDescription>
+            Start a new learning session
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <StartSessionDialog mode="mistakes">
+            <Button variant="outline" className="justify-start w-full cursor-pointer">
+              <AlertCircle className="mr-2 h-4 w-4" />
+              Practice Mistakes
+            </Button>
+          </StartSessionDialog>
+
+          <StartSessionDialog mode="new">
+            <Button variant="outline" className="justify-start w-full cursor-pointer">
+              <BookOpen className="mr-2 h-4 w-4" />
+              Learn New Words
+            </Button>
+          </StartSessionDialog>
+
+          {/* <StartSessionDialog mode="randomized">
+            <Button variant="outline" className="justify-start w-full cursor-pointer">
+              <RefreshCw className="mr-2 h-4 w-4" />
+              Randomized Session
+            </Button>
+          </StartSessionDialog> */}
+
+          <StartSessionDialog mode="review">
+            <Button variant="outline" className="justify-start w-full cursor-pointer">
+              <RefreshCw className="mr-2 h-4 w-4" />
+              Review Due Words
+            </Button>
+          </StartSessionDialog>
+
+          {/* <StartSessionDialog mode="important" key="important-words">
+            <Button variant="outline" className="justify-start w-full cursor-pointer">
+              <Star className="mr-2 h-4 w-4" />
+              Practice Important Words
+            </Button>
+          </StartSessionDialog> */}
+
+        <StartSessionDialog mode="custom">
+            <Button variant="outline" className="justify-start w-full cursor-pointer">
+              <PenLine className="mr-2 h-4 w-4" />
+              Custom Session
+            </Button>
+          </StartSessionDialog> 
+
+        </CardContent>
+      </Card>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
         <TabsList className="flex flex-wrap md:flex-nowrap gap-2 md:gap-4">
@@ -148,59 +201,7 @@ export default function LearnPage() {
             </Card>
           </div>
 
-          <div className="grid gap-4 md:grid-cols-2">
-            <Card>
-              <CardHeader>
-                <CardTitle>Quick Start</CardTitle>
-                <CardDescription>
-                  Start a new learning session
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="grid gap-2">
-
-                <Button variant="outline" className="justify-start cursor-pointer">
-                  <StartSessionDialog mode="mistakes">
-                    <span className="flex items-center">
-                      <AlertCircle className="mr-2 h-4 w-4" />
-                      Practice Mistakes
-                    </span>
-                  </StartSessionDialog>
-                </Button>
-                <Button variant="outline" className="justify-start cursor-pointer">
-                  <StartSessionDialog mode="new">
-                    <span className="flex items-center">
-                      <BookOpen className="mr-2 h-4 w-4" />
-                      Learn New Words
-                    </span>
-                  </StartSessionDialog>
-                </Button>
-                <Button variant="outline" className="justify-start cursor-pointer">
-                  <StartSessionDialog mode="randomized">
-                    <span className="flex items-center">
-                      <RefreshCw className="mr-2 h-4 w-4" />
-                      Randomized Session
-                    </span>
-                  </StartSessionDialog>
-                </Button>
-                <Button variant="outline" className="justify-start cursor-pointer">
-                  <StartSessionDialog mode="review">
-                    <span className="flex items-center">
-                      <RefreshCw className="mr-2 h-4 w-4" />
-                      Review Due Words
-                    </span>
-                  </StartSessionDialog>
-                </Button>
-                <Button variant="outline" className="justify-start cursor-pointer">
-                  <StartSessionDialog mode="important" key="important-words" >
-                    <span className="flex items-center">
-                      <Star className="mr-2 h-4 w-4" />
-                      Practice Important Words
-                    </span>
-                  </StartSessionDialog>
-                </Button>
-              </CardContent>
-            </Card>
-
+          <div className="">
             <Card>
               <CardHeader>
                 <CardTitle>Recent Sessions</CardTitle>
@@ -209,9 +210,7 @@ export default function LearnPage() {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-
                 <RecentSessions />
-
               </CardContent>
             </Card>
           </div>

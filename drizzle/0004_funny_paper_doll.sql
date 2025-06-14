@@ -1,0 +1,1 @@
+ALTER TABLE "learning_sessions" RENAME COLUMN "section" TO "sections";
