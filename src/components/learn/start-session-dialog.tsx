@@ -77,7 +77,12 @@ export function StartSessionDialog({ children, mode = "new" }: StartSessionDialo
       });
 
       if (!response.ok) {
-        throw new Error("Failed to start session");
+        let errorMsg = "Failed to start learning session";
+        try {
+          const errorData = await response.json();
+          if (errorData?.error) errorMsg = errorData.error;
+        } catch {}
+        throw new Error(errorMsg);
       }
 
       const data = await response.json();
@@ -85,7 +90,7 @@ export function StartSessionDialog({ children, mode = "new" }: StartSessionDialo
       router.push(`/dashboard/learn/session/${data.sessionId}`);
     } catch (error) {
       console.error("Error starting session:", error);
-      toast.error("Failed to start learning session");
+      toast.error(error instanceof Error ? error.message : "Failed to start learning session");
     } finally {
       setIsStarting(false);
     }

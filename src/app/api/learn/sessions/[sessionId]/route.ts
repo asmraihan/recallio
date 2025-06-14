@@ -37,7 +37,7 @@ export async function GET(
       .where(eq(sessionWords.sessionId, sessionId));
     const wordIds = sessionWordRows.map((row) => row.wordId);
     if (!wordIds.length) {
-      return NextResponse.json({ session: learningSession, words: [] });
+      return NextResponse.json({ error: "No new words in this section." }, { status: 400 });
     }
     // Fetch word details and preserve order, join with learning_progress for 'important'
     const wordDetails = await db

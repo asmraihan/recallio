@@ -46,8 +46,9 @@ interface WordResponse {
 
 export default function WordsPage() {
   const [search, setSearch] = useState("");
-  const [section, setSection] = useState<string>("all");
+  const [section, setSection] = useState<string>("");
   const [sections, setSections] = useState<number[]>([]);
+  const [sectionsLoaded, setSectionsLoaded] = useState(false); // NEW
   const [sortBy, setSortBy] = useState<"date" | "word">("date");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
 
@@ -58,6 +59,7 @@ export default function WordsPage() {
       .then((data: { sections: number[] }) => {
         setSections(data.sections);
         if (data.sections.length > 0) setSection(data.sections[0].toString());
+        setSectionsLoaded(true); // NEW
       });
   }, []);
 
@@ -81,7 +83,7 @@ export default function WordsPage() {
         updatedAt: new Date(word.updatedAt),
       }));
     },
-    enabled: !!section,
+    enabled: sectionsLoaded && !!section, // CHANGED
     retry: 1,
   });
 

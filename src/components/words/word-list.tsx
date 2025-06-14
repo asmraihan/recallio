@@ -88,12 +88,11 @@ export function WordList({ words }: WordListProps) {
                   <Button
                     variant="ghost"
                     size="icon"
-                    onClick={() => {
-                      // TODO: Implement edit functionality
-                      toast.info("Edit functionality coming soon");
-                    }}
+                    asChild
                   >
-                    <Pencil className="h-4 w-4" />
+                    <a href={`/dashboard/words/${word.id}/edit`} title="Edit word">
+                      <Pencil className="h-4 w-4" />
+                    </a>
                   </Button>
                   <Button
                     variant="ghost"
