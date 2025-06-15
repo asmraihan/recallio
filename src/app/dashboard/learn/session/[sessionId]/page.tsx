@@ -40,7 +40,9 @@ export default function LearningSessionPage() {
   const [showContinueHint, setShowContinueHint] = useState(false);
   const [dragFeedback, setDragFeedback] = useState<null | 'plus' | 'minus'>(null);
   const [lastUnansweredIndex, setLastUnansweredIndex] = useState<number>(0);
-  const [direction, setDirection] = useState<string>("german_to_english");
+  const [direction, setDirection] = useState("german_to_english");
+  const [sessionType, setSessionType] = useState<string>("");
+  const [sections, setSections] = useState<number[]>([]);
 
   const x = useMotionValue(0);
   const cardRotate = useTransform(x, [-300, 0, 300], [-45, 0, 45]);
@@ -60,6 +62,8 @@ export default function LearningSessionPage() {
         const data = await res.json();
         const fetchedWords = data.words || [];
         setDirection(data.session?.direction || "german_to_english");
+        setSessionType(data.session?.sessionType || "");
+        setSections(data.session?.sections || []);
         setWords(fetchedWords);
         setCards(fetchedWords.map((word: Word & { answeredAt?: string | null, isCorrect?: boolean | null }) => ({
           word,
@@ -259,6 +263,26 @@ export default function LearningSessionPage() {
 
   return (
     <div className="flex flex-col items-center justify-center p-4">
+      {/* Session Details */}
+      <div className="w-full max-w-md mb-6 flex flex-col gap-2">
+        <div className="flex flex-wrap gap-2 items-center">
+          <span className="font-semibold text-xs ">
+            {sessionType.charAt(0).toUpperCase() + sessionType.slice(1)} Session
+          </span>
+      
+          {sections.length > 0 && (
+            <span className="text-xs px-2 py-0.5 rounded bg-primary/10 text-primary font-medium">
+              Section{sections.length > 1 ? 's' : ''}: {sections.join(", ")}
+            </span>
+          )}
+        </div>
+        <div className="flex items-center gap-2">
+          <div className="text-xs text-muted-foreground">
+            Progress: {correctCount + incorrectCount} / {words.length} words
+          </div>
+        </div>
+      </div>
+
       <motion.div
         className="w-full max-w-md relative"
         initial={{ opacity: 0 }}
@@ -300,7 +324,7 @@ export default function LearningSessionPage() {
                   e.stopPropagation();
                   handleMarkImportant(currentCard.word);
                 }}
-                className="absolute top-4 right-4 z-10"
+                className="absolute top-4 right-4 z-10 cursor-pointer"
               >
                 <Star
                   className={clsx(
@@ -452,7 +476,7 @@ export default function LearningSessionPage() {
               e.stopPropagation();
               goToPreviousCard();
             }}
-            className="absolute -left-4 -bottom-4 z-10 bg-background shadow-md"
+            className="absolute -left-4 -bottom-4 z-10 bg-background shadow-md cursor-pointer"
           >
             <Undo className="h-4 w-4" />
           </Button>

@@ -240,10 +240,12 @@ export function BatchAddForm() {
               Example: {patternInstructions[pattern].example}
               <br />
               <br />
-               Prompt: {" "}
+              Prompt: {" "}
+              <span>"</span>
               <span ref={promptRef} className="">
-               "Give me a list of German words followed by Bangla and English translations in this exact format: German-বাংলা-English. Use only two hyphens per line — one between German and Bangla, and one between Bangla and English. Never use extra hyphens, dashes, or slashes inside any translation. Use simple, clean Bangla and English words. Example: Haus-বাড়ি-house. If a word refers to multiple meanings (like 'Eltern'), choose one clear equivalent."
+             Give me translation list of German words followed by Bangla and English translations in this exact format: German-বাংলা-English. Use only two hyphens per line — one between German and Bangla, and one between Bangla and English. Never use extra hyphens, dashes, or slashes inside any translation. Use simple, clean Bangla and English words. Example: Haus-বাড়ি-house. If a word refers to multiple meanings put / (slash symbol) between them. For nouns, always include the definite article (der, die, or das) with the word. 
               </span>
+              <span>"</span>
               <button
                 type="button"
                 onClick={handleCopyPrompt}

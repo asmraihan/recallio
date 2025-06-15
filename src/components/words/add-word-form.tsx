@@ -46,7 +46,7 @@ export function AddWordForm() {
       banglaTranslation: "",
       exampleSentence: "",
       notes: "",
-      section: 1,
+      section: 0,
     },
     mode: "onChange",
   });
@@ -106,7 +106,7 @@ export function AddWordForm() {
           name="englishTranslation"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>English Translation (optional)</FormLabel>
+              <FormLabel>English Translation </FormLabel>
               <FormControl>
                 <Input placeholder="Enter English translation" {...field} />
               </FormControl>
