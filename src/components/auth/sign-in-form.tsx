@@ -20,8 +20,8 @@ import {
 import { Input } from "@/components/ui/input";
 
 const formSchema = z.object({
-  email: z.string().email("Invalid email address"),
-  password: z.string().min(6, "Password must be at least 6 characters"),
+  email: z.string().email("Invalid email address").trim().toLowerCase(),
+  password: z.string().min(6, "Password must be at least 6 characters").trim(),
 });
 
 type FormData = z.infer<typeof formSchema>;

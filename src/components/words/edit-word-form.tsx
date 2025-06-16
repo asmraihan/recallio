@@ -69,7 +69,8 @@ export function EditWordForm({ word }: { word: any }) {
         return;
       }
       toast.success(data.message || "Word updated successfully");
-      router.push("/dashboard/words");
+      router.push(`/dashboard/words?section=${values.section}`);
+      // Optionally refresh the words list
       router.refresh();
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Something went wrong");

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
@@ -15,6 +15,7 @@ import { Loader2, Upload } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
 import { ExportDialog } from "@/components/words/export-import";
+import { useRouter, useSearchParams, usePathname } from "next/navigation";
 
 // Match the database schema
 interface Word {
@@ -45,12 +46,36 @@ interface WordResponse {
 }
 
 export default function WordsPage() {
-  const [search, setSearch] = useState("");
-  const [section, setSection] = useState<string>("");
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  
   const [sections, setSections] = useState<number[]>([]);
-  const [sectionsLoaded, setSectionsLoaded] = useState(false); // NEW
-  // const [sortBy, setSortBy] = useState<"date" | "word">("date");
-  // const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
+  const [sectionsLoaded, setSectionsLoaded] = useState(false);
+
+  // Get values from URL or defaults
+  const search = searchParams.get("search") || "";
+  const section = searchParams.get("section") || "";
+
+  // Create a memoized function for updating URL params
+  const createQueryString = useCallback(
+    (name: string, value: string) => {
+      const params = new URLSearchParams(searchParams.toString());
+      if (value) {
+        params.set(name, value);
+      } else {
+        params.delete(name);
+      }
+      return params.toString();
+    },
+    [searchParams]
+  );
+
+  // Update URL when filters change
+  const updateFilters = useCallback((name: string, value: string) => {
+    const queryString = createQueryString(name, value);
+    router.push(`${pathname}?${queryString}`, { scroll: false });
+  }, [pathname, router, createQueryString]);
 
   // Fetch sections on mount
   useEffect(() => {
@@ -58,10 +83,12 @@ export default function WordsPage() {
       .then(res => res.json())
       .then((data: { sections: number[] }) => {
         setSections(data.sections);
-        if (data.sections.length > 0) setSection(data.sections[0].toString());
-        setSectionsLoaded(true); // NEW
+        if (!section && data.sections.length > 0) {
+          updateFilters("section", data.sections[0].toString());
+        }
+        setSectionsLoaded(true);
       });
-  }, []);
+  }, [section, updateFilters]);
 
   // Fetch words for the selected section
   const { data: words = [], isLoading, error, refetch } = useQuery<Word[]>({
@@ -83,28 +110,18 @@ export default function WordsPage() {
         updatedAt: new Date(word.updatedAt),
       }));
     },
-    enabled: sectionsLoaded && !!section, // CHANGED
+    enabled: sectionsLoaded,
     retry: 1,
   });
 
   const filteredWords = words.filter((word) => {
+    if (!search) return true;
     const matchesSearch =
       word.germanWord.toLowerCase().includes(search.toLowerCase()) ||
       (word.englishTranslation?.toLowerCase().includes(search.toLowerCase()) ?? false) ||
       (word.banglaTranslation?.toLowerCase().includes(search.toLowerCase()) ?? false);
     return matchesSearch;
-  })
-  // .sort((a, b) => {
-  //   if (sortBy === "date") {
-  //     return sortOrder === "asc"
-  //       ? a.createdAt.getTime() - b.createdAt.getTime()
-  //       : b.createdAt.getTime() - a.createdAt.getTime();
-  //   } else {
-  //     return sortOrder === "asc"
-  //       ? a.germanWord.localeCompare(b.germanWord)
-  //       : b.germanWord.localeCompare(a.germanWord);
-  //   }
-  // });
+  });
 
   if (error) {
     return (
@@ -145,12 +162,12 @@ export default function WordsPage() {
           <Input
             placeholder="Search words..."
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            onChange={(e) => updateFilters("search", e.target.value)}
             className="max-w-sm"
           />
           <Select
             value={section}
-            onValueChange={setSection}
+            onValueChange={(value) => updateFilters("section", value)}
           >
             <SelectTrigger className="w-[180px]">
               <SelectValue placeholder="Filter by section" />

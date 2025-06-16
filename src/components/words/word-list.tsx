@@ -67,8 +67,8 @@ export function WordList({ words }: WordListProps) {
             <TableHead>English</TableHead>
             <TableHead>Bangla</TableHead>
             <TableHead>Section</TableHead>
-            <TableHead>Example</TableHead>
-            <TableHead>Notes</TableHead>
+            {/* <TableHead>Example</TableHead>
+            <TableHead>Notes</TableHead> */}
             <TableHead>Created</TableHead>
             <TableHead className="text-right">Actions</TableHead>
           </TableRow>
@@ -80,8 +80,8 @@ export function WordList({ words }: WordListProps) {
               <TableCell>{word.englishTranslation || <span className="text-muted-foreground">N/A</span>}</TableCell>
               <TableCell>{word.banglaTranslation || <span className="text-muted-foreground">N/A</span>}</TableCell>
               <TableCell>{word.section}</TableCell>
-              <TableCell>{word.exampleSentence || <span className="text-muted-foreground">N/A</span>}</TableCell>
-              <TableCell>{word.notes || <span className="text-muted-foreground">N/A</span>}</TableCell>
+              {/* <TableCell>{word.exampleSentence || <span className="text-muted-foreground">N/A</span>}</TableCell>
+              <TableCell>{word.notes || <span className="text-muted-foreground">N/A</span>}</TableCell> */}
               <TableCell>{word.createdAt.toLocaleDateString()}</TableCell>
               <TableCell className="text-right">
                 <div className="flex justify-end gap-2">
