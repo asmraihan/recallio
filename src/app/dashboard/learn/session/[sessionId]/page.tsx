@@ -264,7 +264,7 @@ export default function LearningSessionPage() {
   return (
     <div className="flex flex-col items-center justify-center p-4">
       {/* Session Details */}
-      <div className="w-full max-w-md mb-6 flex flex-col gap-2">
+      <div className="w-full max-w-md mb-2 flex flex-col gap-1">
         <div className="flex flex-wrap gap-2 items-center">
           <span className="font-semibold text-xs ">
             {sessionType.charAt(0).toUpperCase() + sessionType.slice(1)} Session

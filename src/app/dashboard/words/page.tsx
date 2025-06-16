@@ -49,8 +49,8 @@ export default function WordsPage() {
   const [section, setSection] = useState<string>("");
   const [sections, setSections] = useState<number[]>([]);
   const [sectionsLoaded, setSectionsLoaded] = useState(false); // NEW
-  const [sortBy, setSortBy] = useState<"date" | "word">("date");
-  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
+  // const [sortBy, setSortBy] = useState<"date" | "word">("date");
+  // const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
 
   // Fetch sections on mount
   useEffect(() => {
@@ -93,17 +93,18 @@ export default function WordsPage() {
       (word.englishTranslation?.toLowerCase().includes(search.toLowerCase()) ?? false) ||
       (word.banglaTranslation?.toLowerCase().includes(search.toLowerCase()) ?? false);
     return matchesSearch;
-  }).sort((a, b) => {
-    if (sortBy === "date") {
-      return sortOrder === "asc"
-        ? a.createdAt.getTime() - b.createdAt.getTime()
-        : b.createdAt.getTime() - a.createdAt.getTime();
-    } else {
-      return sortOrder === "asc"
-        ? a.germanWord.localeCompare(b.germanWord)
-        : b.germanWord.localeCompare(a.germanWord);
-    }
-  });
+  })
+  // .sort((a, b) => {
+  //   if (sortBy === "date") {
+  //     return sortOrder === "asc"
+  //       ? a.createdAt.getTime() - b.createdAt.getTime()
+  //       : b.createdAt.getTime() - a.createdAt.getTime();
+  //   } else {
+  //     return sortOrder === "asc"
+  //       ? a.germanWord.localeCompare(b.germanWord)
+  //       : b.germanWord.localeCompare(a.germanWord);
+  //   }
+  // });
 
   if (error) {
     return (
@@ -164,7 +165,7 @@ export default function WordsPage() {
             </SelectContent>
           </Select>
         </div>
-        <div className="flex items-center gap-2">
+        {/* <div className="flex items-center gap-2">
           <Select
             value={sortBy}
             onValueChange={(value: "date" | "word") => setSortBy(value)}
@@ -184,7 +185,7 @@ export default function WordsPage() {
           >
             {sortOrder === "asc" ? "↑" : "↓"}
           </Button>
-        </div>
+        </div> */}
       </div>
 
       {isLoading ? (
