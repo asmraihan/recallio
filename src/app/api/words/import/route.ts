@@ -13,7 +13,7 @@ const wordSchema = z.object({
   banglaTranslation: z.string().nullable(),
   exampleSentence: z.string().nullable(),
   notes: z.string().nullable(),
-  section: z.coerce.number().min(1, "Section must be at least 1").max(10, "Section must be at most 10"),
+  section: z.string().min(1, "Section is required"),
   createdAt: z.string().optional(),
   updatedAt: z.string().optional(),
 });

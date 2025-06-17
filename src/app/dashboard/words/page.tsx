@@ -25,7 +25,7 @@ interface Word {
   banglaTranslation: string | null;
   exampleSentence: string | null;
   notes: string | null;
-  section: number;
+  section: string;
   createdBy: string;
   createdAt: Date;
   updatedAt: Date;
@@ -39,7 +39,7 @@ interface WordResponse {
   banglaTranslation: string | null;
   exampleSentence: string | null;
   notes: string | null;
-  section: number;
+  section: string;
   createdBy: string;
   createdAt: string;
   updatedAt: string;
@@ -50,7 +50,7 @@ export default function WordsPage() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   
-  const [sections, setSections] = useState<number[]>([]);
+  const [sections, setSections] = useState<string[]>([]);
   const [sectionsLoaded, setSectionsLoaded] = useState(false);
 
   // Get values from URL or defaults
@@ -81,10 +81,10 @@ export default function WordsPage() {
   useEffect(() => {
     fetch("/api/words/sections")
       .then(res => res.json())
-      .then((data: { sections: number[] }) => {
+      .then((data: { sections: string[] }) => {
         setSections(data.sections);
         if (!section && data.sections.length > 0) {
-          updateFilters("section", data.sections[0].toString());
+          updateFilters("section", data.sections[0]);
         }
         setSectionsLoaded(true);
       });
@@ -174,9 +174,9 @@ export default function WordsPage() {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All Sections</SelectItem>
-              {sections.map((sectionNum) => (
-                <SelectItem key={sectionNum} value={sectionNum.toString()}>
-                  Section {sectionNum}
+              {sections.map((sectionValue) => (
+                <SelectItem key={sectionValue} value={sectionValue}>
+                  {sectionValue}
                 </SelectItem>
               ))}
             </SelectContent>

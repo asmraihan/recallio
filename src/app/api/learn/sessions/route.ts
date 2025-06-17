@@ -10,7 +10,7 @@ interface Word {
   germanWord: string;
   englishTranslation: string | null;
   banglaTranslation: string | null;
-  section: number;
+  section: string;
 }
 
 // POST /api/learn/sessions - Start a new learning session
@@ -31,7 +31,7 @@ export async function POST(req: Request) {
     // Helper: section filter
     const sectionFilter = (col: typeof words.section) =>
       Array.isArray(sections) && sections.length > 0
-        ? inArray(col, sections.map(Number))
+        ? inArray(col, sections)
         : sql`TRUE`;
 
     // Get words based on session type

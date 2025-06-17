@@ -12,7 +12,7 @@ const batchWordSchema = z.object({
       germanWord: z.string().min(1, "German word is required"),
       englishTranslation: z.string().nullable(),
       banglaTranslation: z.string().nullable(),
-      section: z.number().min(1, "Section must be at least 1"),
+  section: z.string().min(1, "Section is required"),
     })
   ).min(1, "At least one word is required").max(100, "Maximum 100 words allowed"),
 });

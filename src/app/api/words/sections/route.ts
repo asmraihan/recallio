@@ -3,7 +3,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { words } from "@/lib/db/schema";
-import { eq } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 
 export async function GET() {
   try {
@@ -23,7 +23,8 @@ export async function GET() {
       .from(words)
       .where(eq(words.createdBy, session.user.id))
       .groupBy(words.section)
-      .orderBy(words.section);
+      // Ensure sections are ordered by createdAt
+      .orderBy(sql` MIN(${words.createdAt})`)
 
     return NextResponse.json({
       sections: sections.map(s => s.section)

@@ -25,7 +25,7 @@ const formSchema = z.object({
   banglaTranslation: z.string().optional(),
   exampleSentence: z.string().optional(),
   notes: z.string().optional(),
-  section: z.coerce.number().min(1, "Section is required"),
+  section: z.string().min(1, "Section is required"),
 }).refine(
   (data) => data.englishTranslation || data.banglaTranslation,
   {
@@ -46,7 +46,7 @@ export function AddWordForm() {
       banglaTranslation: "",
       exampleSentence: "",
       notes: "",
-      section: 0,
+      section: "Sec",
     },
     mode: "onChange",
   });
@@ -168,7 +168,7 @@ export function AddWordForm() {
             <FormItem>
               <FormLabel>Section</FormLabel>
               <FormControl>
-                <Input type="number" min={1} placeholder="Section number" {...field} />
+                <Input placeholder="Section (e.g., Sec 1)" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>

@@ -13,7 +13,7 @@ interface LearningStats {
   averageAccuracy: number;
   learningStreak: number;
   sectionProgress: {
-    section: number;
+    section: string;
     total: number;
     mastered: number;
   }[];

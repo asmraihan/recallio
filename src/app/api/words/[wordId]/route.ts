@@ -12,7 +12,7 @@ const wordSchema = z.object({
   banglaTranslation: z.string().optional(),
   exampleSentence: z.string().optional(),
   notes: z.string().optional(),
-  section: z.number().min(1, "Section must be at least 1"),
+  section: z.string().min(1, "Section is required"),
 }).refine(
   (data) => data.englishTranslation || data.banglaTranslation,
   "Either English or Bangla translation must be provided"

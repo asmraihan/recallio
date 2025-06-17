@@ -18,7 +18,7 @@ export const words = pgTable('words', {
   banglaTranslation: text('bangla_translation'),
   exampleSentence: text('example_sentence'),
   notes: text('notes'),
-  section: integer('section').notNull(),
+  section: text('section').notNull(),
   createdBy: uuid('created_by').references(() => users.id),
   createdAt: timestamp('created_at').defaultNow(),
   updatedAt: timestamp('updated_at').defaultNow(),

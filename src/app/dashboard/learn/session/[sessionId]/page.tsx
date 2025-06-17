@@ -14,7 +14,7 @@ interface Word {
   germanWord: string;
   englishTranslation: string | null;
   banglaTranslation: string | null;
-  section: number;
+  section: string;
   important?: boolean;
 }
 
@@ -272,7 +272,7 @@ export default function LearningSessionPage() {
       
           {sections.length > 0 && (
             <span className="text-xs px-2 py-0.5 rounded bg-primary/10 text-primary font-medium">
-              Section{sections.length > 1 ? 's' : ''}: {sections.join(", ")}
+              {sections.length > 1 ? 's' : ''}: {sections.join(", ")}
             </span>
           )}
         </div>

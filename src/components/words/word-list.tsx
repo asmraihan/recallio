@@ -22,7 +22,7 @@ interface Word {
   banglaTranslation: string | null;
   exampleSentence: string | null;
   notes: string | null;
-  section: number;
+  section: string;
   createdBy: string;
   createdAt: Date;
   updatedAt: Date;

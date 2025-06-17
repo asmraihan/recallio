@@ -38,7 +38,7 @@ export default function LearnPage() {
     germanWord: string;
     englishTranslation: string | null;
     banglaTranslation: string | null;
-    section: number;
+    section: string;
   };
   const { data: dueWords, isLoading: isLoadingDueWords } = useQuery<DueWord[]>({
     queryKey: ["due-words-list"],

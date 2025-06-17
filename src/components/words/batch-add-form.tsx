@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
@@ -27,16 +27,20 @@ import { Copy } from "lucide-react";
 const formSchema = z.object({
   pattern: z.enum(["german-bangla", "german-english", "german-bangla-english"]),
   words: z.string().min(1, "Please enter some words"),
-  section: z.coerce.number().min(1, "Section must be at least 1"),
+  section: z.string().min(1, "Section is required"),
 });
 
-type FormValues = z.infer<typeof formSchema>;
+interface FormValues {
+  pattern: "german-bangla" | "german-english" | "german-bangla-english";
+  words: string;
+  section: string;
+}
 
 interface ParsedWord {
   germanWord: string;
   banglaTranslation: string | null;
   englishTranslation: string | null;
-  section: number;
+  section: string;
 }
 
 const patternInstructions = {
@@ -60,112 +64,83 @@ export function BatchAddForm() {
   const [parseError, setParseError] = useState<string | null>(null);
   const [parsedWords, setParsedWords] = useState<ParsedWord[]>([]);
   const [isAdding, setIsAdding] = useState(false);
-  const [section, setSection] = useState(0);
+  const [section, setSection] = useState("Sec 1");
   const promptRef = useRef<HTMLSpanElement>(null);
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      pattern: "german-bangla-english",
+      pattern: "german-bangla",
       words: "",
-      section: 0, // Set default section to 0
+      section: "Sec 1",
     },
   });
 
   const pattern = form.watch("pattern");
 
-  const parseWords = (text: string, currentPattern: FormValues["pattern"]) => {
-    setParseError(null);
-
-    // Split into lines and clean them
-    const lines = text
-      .split("\n")
-      .map(line => line.trim())
-      .filter(line => line.length > 0);
-
-    const words: ParsedWord[] = [];
-    const errors: string[] = [];
-
-    lines.forEach((line, index) => {
-      // Only accept format: word-word with no spaces
-      const parts = line.split("-");
-
-      const expectedParts = currentPattern === "german-bangla-english" ? 3 : 2;
-
-      if (parts.length !== expectedParts) {
-        errors.push(
-          `Line ${index + 1}: Invalid format.\n` +
-          `Expected: "${patternInstructions[currentPattern].example}"\n` +
-          `Got: "${line}"`
-        );
-        return;
-      }
-
-      // Validate that we have non-empty parts
-      if (parts.some(part => !part.trim())) {
-        errors.push(
-          `Line ${index + 1}: All parts must be non-empty.\n` +
-          `Got: "${line}"`
-        );
-        return;
-      }
-
-      const [german, second, third] = parts;
-
-      words.push({
-        germanWord: german.trim(),
-        banglaTranslation: currentPattern === "german-english" ? null : second.trim(),
-        englishTranslation: currentPattern === "german-bangla" ? null :
-          currentPattern === "german-english" ? second.trim() : third.trim(),
-        section: form.getValues("section"),
-      });
-    });
-
-    if (errors.length > 0) {
-      setParseError(errors.join("\n"));
+  const parseWords = useCallback((text: string, currentPattern: FormValues["pattern"]) => {
+    if (!text.trim()) {
       setParsedWords([]);
-    } else {
-      setParsedWords(words);
+      setParseError(null);
+      return;
     }
-  };
+
+    try {
+      const lines = text.trim().split("\n");
+      const words = lines.map((line) => {
+        const parts = line.split(/[,\t]/).map((part) => part.trim());
+        if (parts.length < 2) {
+          throw new Error(`Invalid format in line: ${line}`);
+        }
+
+        const [first, second, third] = parts;
+        return ({
+          germanWord: first.trim(),
+          banglaTranslation: currentPattern === "german-english" ? null :
+            currentPattern === "german-bangla" ? second.trim() : second.trim(),
+          englishTranslation: currentPattern === "german-bangla" ? null :
+            currentPattern === "german-english" ? second.trim() : third.trim(),
+          section: form.getValues("section"),
+        });
+      });
+
+      setParsedWords(words);
+      setParseError(null);
+    } catch (error) {
+      setParsedWords([]);
+      setParseError(error instanceof Error ? error.message : "Failed to parse words");
+    }
+  }, [form]);
 
   const onSubmit = async (data: FormValues) => {
-    if (parsedWords.length === 0) {
-      parseWords(data.words, data.pattern);
-      if (parsedWords.length === 0) {
-        return;
-      }
-    }
-
     try {
       setIsAdding(true);
       const response = await fetch("/api/words/batch", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ words: parsedWords }),
+        body: JSON.stringify({
+          words: parsedWords,
+        }),
       });
-
-      const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || "Failed to add words");
+        const error = await response.json();
+        throw new Error(error.message || "Failed to add words");
       }
 
-      toast.success(data.message || `Added ${parsedWords.length} words to section ${data.section}`);
+      const result = await response.json();
+      toast.success(result.message || `Added ${parsedWords.length} words to section ${data.section}`);
       form.reset({
-        pattern: "german-bangla-english",
+        pattern: "german-bangla",
         words: "",
-        section: 0,
+        section: "Sec 1",
       });
-      setSection(0);
+      setSection("Sec 1");
       setParsedWords([]);
       setParseError(null);
-
-      // Refresh the word list
-      await queryClient.invalidateQueries({ queryKey: ["words"] });
       router.refresh();
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Failed to add words. Please try again.");
+      toast.error(error instanceof Error ? error.message : "Failed to add words");
     } finally {
       setIsAdding(false);
     }
@@ -179,12 +154,10 @@ export function BatchAddForm() {
     }
   };
 
-  // Sync section state with form
   const handleSectionChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    let value = parseInt(e.target.value);
-    if (isNaN(value) || value < 1) value = 1;
+    const value = e.target.value;
     setSection(value);
-    form.setValue("section", value, { shouldValidate: true });
+    form.setValue("section", value);
     // Re-parse words to update preview
     parseWords(form.getValues("words"), pattern);
   };
@@ -220,11 +193,10 @@ export function BatchAddForm() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="section">Section Number</Label>
+              <Label htmlFor="section">Section</Label>
               <Input
                 id="section"
-                type="number"
-                min={1}
+                placeholder="Section (e.g., Sec 1)"
                 value={section}
                 onChange={handleSectionChange}
               />

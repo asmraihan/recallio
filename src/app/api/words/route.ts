@@ -12,7 +12,7 @@ const wordSchema = z.object({
   banglaTranslation: z.string().optional(),
   exampleSentence: z.string().optional(),
   notes: z.string().optional(),
-  section: z.number().min(1, "Section must be at least 1"),
+  section: z.string().min(1, "Section is required"),
 }).refine(
   (data) => data.englishTranslation || data.banglaTranslation,
   "Either English or Bangla translation must be provided"
@@ -46,7 +46,12 @@ export async function POST(req: Request) {
     }
 
     const word = await db.insert(words).values({
-      ...validatedData,
+      germanWord: validatedData.germanWord,
+      englishTranslation: validatedData.englishTranslation,
+      banglaTranslation: validatedData.banglaTranslation,
+      exampleSentence: validatedData.exampleSentence,
+      notes: validatedData.notes,
+      section: validatedData.section,
       createdBy: session.user.id,
     }).returning();
 
@@ -87,7 +92,7 @@ export async function GET(req: NextRequest) {
       userWords = await db
         .select()
         .from(words)
-        .where(and(eq(words.createdBy, session.user.id), eq(words.section, Number(sectionParam))))
+        .where(and(eq(words.createdBy, session.user.id), eq(words.section, sectionParam)))
         .orderBy(words.createdAt);
     } else {
       userWords = await db

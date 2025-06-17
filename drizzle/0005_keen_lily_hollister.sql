@@ -1,0 +1,1 @@
+ALTER TABLE "words" ALTER COLUMN "section" SET DATA TYPE text;

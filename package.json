@@ -13,7 +13,8 @@
     "db:studio": "drizzle-kit studio",
     "db:check": "drizzle-kit check",
     "db:up": "drizzle-kit up",
-    "format": "prettier --write ."
+    "format": "prettier --write .",
+    "execute": "tsx scripts/execute.ts"
   },
   "dependencies": {
     "@auth/core": "^0.34.2",
@@ -72,6 +73,7 @@
     "prettier": "^3.5.3",
     "prettier-plugin-tailwindcss": "^0.6.12",
     "tailwindcss": "^4",
+    "tsx": "^4.20.3",
     "tw-animate-css": "^1.3.4",
     "typescript": "^5.8.3"
   }
