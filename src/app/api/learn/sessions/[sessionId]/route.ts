@@ -46,6 +46,7 @@ export async function GET(
         germanWord: words.germanWord,
         englishTranslation: words.englishTranslation,
         banglaTranslation: words.banglaTranslation,
+        notes: words.notes,
         section: words.section,
         important: learningProgress.important,
       })

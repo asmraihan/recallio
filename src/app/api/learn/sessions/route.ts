@@ -263,7 +263,7 @@ export async function POST(req: Request) {
       userId: session.user.id,
       sessionType: type,
       direction,
-      sections: Array.isArray(sections) ? sections.map(Number) : [],
+      sections: Array.isArray(sections) ? sections : [],
       status: "in_progress",
       totalWords: wordsToLearn.length,
       correctAnswers: 0,

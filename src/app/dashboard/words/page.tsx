@@ -176,7 +176,7 @@ export default function WordsPage() {
               <SelectItem value="all">All Sections</SelectItem>
               {sections.map((sectionValue) => (
                 <SelectItem key={sectionValue} value={sectionValue}>
-                  {sectionValue}
+                 Section {sectionValue}
                 </SelectItem>
               ))}
             </SelectContent>

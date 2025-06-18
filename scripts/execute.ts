@@ -28,8 +28,13 @@ async function execute() {
     console.log("Starting section update...");
 
     // Update all sections to add "Sec " prefix
+    // await db.execute(
+    //   sql`UPDATE words SET section = CONCAT('Sec ', section);`
+    // );
+
+    // Update all sections to remove "Sec " prefix
     await db.execute(
-      sql`UPDATE words SET section = CONCAT('Sec ', section);`
+      sql`UPDATE words SET section = SUBSTRING(section FROM 5) WHERE section LIKE 'Sec %';`
     );
 
     console.log("Successfully updated all sections!");

@@ -64,7 +64,7 @@ export function BatchAddForm() {
   const [parseError, setParseError] = useState<string | null>(null);
   const [parsedWords, setParsedWords] = useState<ParsedWord[]>([]);
   const [isAdding, setIsAdding] = useState(false);
-  const [section, setSection] = useState("Sec 1");
+  const [section, setSection] = useState("");
   const promptRef = useRef<HTMLSpanElement>(null);
 
   const form = useForm<FormValues>({
@@ -72,7 +72,7 @@ export function BatchAddForm() {
     defaultValues: {
       pattern: "german-bangla",
       words: "",
-      section: "Sec 1",
+      section: "",
     },
   });
 
@@ -133,9 +133,9 @@ export function BatchAddForm() {
       form.reset({
         pattern: "german-bangla",
         words: "",
-        section: "Sec 1",
+        section: "",
       });
-      setSection("Sec 1");
+      setSection("");
       setParsedWords([]);
       setParseError(null);
       router.refresh();
@@ -196,7 +196,7 @@ export function BatchAddForm() {
               <Label htmlFor="section">Section</Label>
               <Input
                 id="section"
-                placeholder="Section (e.g., Sec 1)"
+                placeholder="Section (e.g., 1)"
                 value={section}
                 onChange={handleSectionChange}
               />

@@ -46,7 +46,7 @@ export function EditWordForm({ word }: { word: any }) {
       banglaTranslation: word.banglaTranslation || "",
       exampleSentence: word.exampleSentence || "",
       notes: word.notes || "",
-      section: word.section || "Sec 1",
+      section: word.section || "",
     },
     mode: "onChange",
   });
@@ -162,7 +162,7 @@ export function EditWordForm({ word }: { word: any }) {
             <FormItem>
               <FormLabel>Section</FormLabel>
               <FormControl>
-                <Input placeholder="Section (e.g., Sec 1)" {...field} />
+                <Input placeholder="Section (e.g., 1)" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>

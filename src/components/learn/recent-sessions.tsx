@@ -29,7 +29,10 @@ export function RecentSessions() {
       if (!response.ok) throw new Error("Failed to fetch recent sessions");
       return response.json();
     },
+       refetchOnWindowFocus: true,
   });
+
+
 
   if (isLoading) {
     return (

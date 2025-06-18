@@ -76,7 +76,7 @@ export function StartSessionDialog({ children, mode = "new" }: StartSessionDialo
       let body: any = {
         type: sessionType,
         direction,
-        sections: section.map(Number),
+        sections: section,
       };
       if (sessionType === "important") {
         body = { type: "important", direction };
@@ -85,7 +85,7 @@ export function StartSessionDialog({ children, mode = "new" }: StartSessionDialo
         body = {
           type: customMode,
           direction,
-          sections: section.map(Number),
+          sections: section,
           wordCount: selectAll ? "all" : Number(customWordCount) || 20,
         };
       }
@@ -222,9 +222,9 @@ export function StartSessionDialog({ children, mode = "new" }: StartSessionDialo
             <Label htmlFor="section">Sections</Label>
             <MultiSelect
               options={
-                sectionsData?.map((sectionNum: number) => ({
-                  value: sectionNum.toString(),
-                  label: `Section ${sectionNum}`
+                sectionsData?.map((section: string) => ({
+                  value: section,
+                  label: `Section ${section}`
                 })) || []
               }
               onValueChange={(values) => {

@@ -15,6 +15,7 @@ interface Word {
   englishTranslation: string | null;
   banglaTranslation: string | null;
   section: string;
+  notes: string | null;
   important?: boolean;
 }
 
@@ -61,6 +62,7 @@ export default function LearningSessionPage() {
         }
         const data = await res.json();
         const fetchedWords = data.words || [];
+        console.log(fetchedWords , "fetchedWords");
         setDirection(data.session?.direction || "german_to_english");
         setSessionType(data.session?.sessionType || "");
         setSections(data.session?.sections || []);
@@ -272,7 +274,7 @@ export default function LearningSessionPage() {
       
           {sections.length > 0 && (
             <span className="text-xs px-2 py-0.5 rounded bg-primary/10 text-primary font-medium">
-              {sections.length > 1 ? 's' : ''}: {sections.join(", ")}
+            Section{sections.length > 1 ? 's' : ''}: {sections.join(", ")}
             </span>
           )}
         </div>
@@ -414,6 +416,9 @@ export default function LearningSessionPage() {
                         {currentCard.word.banglaTranslation && (
                           <p className="text-lg text-gray-600">{currentCard.word.banglaTranslation}</p>
                         )}
+                        {currentCard.word.notes && (
+                          <p className="text-sm text-gray-500 mt-8 text-center">N.B. {currentCard.word.notes}</p>
+                        )}
                       </>
                     )}
                     {direction === "english_to_german" && (
@@ -421,6 +426,9 @@ export default function LearningSessionPage() {
                         <p className="text-2xl font-bold mb-4">{currentCard.word.germanWord}</p>
                         {currentCard.word.banglaTranslation && (
                           <p className="text-lg text-gray-600">{currentCard.word.banglaTranslation}</p>
+                        )}
+                        {currentCard.word.notes && (
+                          <p className="text-sm text-gray-500 mt-8 text-center">N.B. {currentCard.word.notes}</p>
                         )}
                       </>
                     )}
@@ -430,6 +438,9 @@ export default function LearningSessionPage() {
                         {currentCard.word.englishTranslation && (
                           <p className="text-lg text-gray-600">{currentCard.word.englishTranslation}</p>
                         )}
+                        {currentCard.word.notes && (
+                          <p className="text-sm text-gray-500 mt-8 text-center">N.B. {currentCard.word.notes}</p>
+                        )}
                       </>
                     )}
                     {direction === "bangla_to_german" && (
@@ -437,6 +448,9 @@ export default function LearningSessionPage() {
                         <p className="text-2xl font-bold mb-4">{currentCard.word.germanWord}</p>
                         {currentCard.word.englishTranslation && (
                           <p className="text-lg text-gray-600">{currentCard.word.englishTranslation}</p>
+                        )}
+                        {currentCard.word.notes && (
+                          <p className="text-sm text-gray-500 mt-8 text-center">N.B. {currentCard.word.notes}</p>
                         )}
                       </>
                     )}

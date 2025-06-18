@@ -35,7 +35,7 @@ export default function DashboardLayout({
             <UserNav user={session?.user} />
           </div>
         </header>
-        <main className="flex-1 space-y-4 p-4 pt-6 md:p-8 md:pt-6">
+        <main className="flex-1 space-y-4 p-4 pt-6 md:p-8 md:pt-6 mb-12">
           {children}
         </main>
         <MobileNav />

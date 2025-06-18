@@ -46,7 +46,7 @@ export function AddWordForm() {
       banglaTranslation: "",
       exampleSentence: "",
       notes: "",
-      section: "Sec",
+      section: "",
     },
     mode: "onChange",
   });
@@ -168,7 +168,7 @@ export function AddWordForm() {
             <FormItem>
               <FormLabel>Section</FormLabel>
               <FormControl>
-                <Input placeholder="Section (e.g., Sec 1)" {...field} />
+                <Input placeholder="Section (e.g., 1)" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
