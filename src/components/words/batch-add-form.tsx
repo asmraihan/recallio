@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useCallback } from "react";
+import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
@@ -30,11 +30,7 @@ const formSchema = z.object({
   section: z.string().min(1, "Section is required"),
 });
 
-interface FormValues {
-  pattern: "german-bangla" | "german-english" | "german-bangla-english";
-  words: string;
-  section: string;
-}
+type FormValues = z.infer<typeof formSchema>;
 
 interface ParsedWord {
   germanWord: string;
@@ -70,77 +66,106 @@ export function BatchAddForm() {
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      pattern: "german-bangla",
+      pattern: "german-bangla-english",
       words: "",
-      section: "",
+      section: "", 
     },
   });
 
   const pattern = form.watch("pattern");
 
-  const parseWords = useCallback((text: string, currentPattern: FormValues["pattern"]) => {
-    if (!text.trim()) {
-      setParsedWords([]);
-      setParseError(null);
-      return;
-    }
+  const parseWords = (text: string, currentPattern: FormValues["pattern"]) => {
+    setParseError(null);
 
-    try {
-      const lines = text.trim().split("\n");
-      const words = lines.map((line) => {
-        const parts = line.split(/[,\t]/).map((part) => part.trim());
-        if (parts.length < 2) {
-          throw new Error(`Invalid format in line: ${line}`);
-        }
+    // Split into lines and clean them
+    const lines = text
+      .split("\n")
+      .map(line => line.trim())
+      .filter(line => line.length > 0);
 
-        const [first, second, third] = parts;
-        return ({
-          germanWord: first.trim(),
-          banglaTranslation: currentPattern === "german-english" ? null :
-            currentPattern === "german-bangla" ? second.trim() : second.trim(),
-          englishTranslation: currentPattern === "german-bangla" ? null :
-            currentPattern === "german-english" ? second.trim() : third.trim(),
-          section: form.getValues("section"),
-        });
+    const words: ParsedWord[] = [];
+    const errors: string[] = [];
+
+    lines.forEach((line, index) => {
+      // Only accept format: word-word with no spaces
+      const parts = line.split("-");
+
+      const expectedParts = currentPattern === "german-bangla-english" ? 3 : 2;
+
+      if (parts.length !== expectedParts) {
+        errors.push(
+          `Line ${index + 1}: Invalid format.\n` +
+          `Expected: "${patternInstructions[currentPattern].example}"\n` +
+          `Got: "${line}"`
+        );
+        return;
+      }
+
+      // Validate that we have non-empty parts
+      if (parts.some(part => !part.trim())) {
+        errors.push(
+          `Line ${index + 1}: All parts must be non-empty.\n` +
+          `Got: "${line}"`
+        );
+        return;
+      }
+
+      const [german, second, third] = parts;
+
+      words.push({
+        germanWord: german.trim(),
+        banglaTranslation: currentPattern === "german-english" ? null : second.trim(),
+        englishTranslation: currentPattern === "german-bangla" ? null :
+          currentPattern === "german-english" ? second.trim() : third.trim(),
+        section: form.getValues("section"),
       });
+    });
 
-      setParsedWords(words);
-      setParseError(null);
-    } catch (error) {
+    if (errors.length > 0) {
+      setParseError(errors.join("\n"));
       setParsedWords([]);
-      setParseError(error instanceof Error ? error.message : "Failed to parse words");
+    } else {
+      setParsedWords(words);
     }
-  }, [form]);
+  };
 
   const onSubmit = async (data: FormValues) => {
+    if (parsedWords.length === 0) {
+      parseWords(data.words, data.pattern);
+      if (parsedWords.length === 0) {
+        return;
+      }
+    }
+
     try {
       setIsAdding(true);
       const response = await fetch("/api/words/batch", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          words: parsedWords,
-        }),
+        body: JSON.stringify({ words: parsedWords }),
       });
 
+      const data = await response.json();
+
       if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message || "Failed to add words");
+        throw new Error(data.error || "Failed to add words");
       }
 
-      const result = await response.json();
-      toast.success(result.message || `Added ${parsedWords.length} words to section ${data.section}`);
+      toast.success(data.message || `Added ${parsedWords.length} words to section ${data.section}`);
       form.reset({
-        pattern: "german-bangla",
+        pattern: "german-bangla-english",
         words: "",
         section: "",
       });
       setSection("");
       setParsedWords([]);
       setParseError(null);
+
+      // Refresh the word list
+      await queryClient.invalidateQueries({ queryKey: ["words"] });
       router.refresh();
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Failed to add words");
+      toast.error(error instanceof Error ? error.message : "Failed to add words. Please try again.");
     } finally {
       setIsAdding(false);
     }
@@ -154,10 +179,11 @@ export function BatchAddForm() {
     }
   };
 
+  // Sync section state with form
   const handleSectionChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setSection(value);
-    form.setValue("section", value);
+    form.setValue("section", value, { shouldValidate: true });
     // Re-parse words to update preview
     parseWords(form.getValues("words"), pattern);
   };
@@ -193,10 +219,10 @@ export function BatchAddForm() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="section">Section</Label>
+              <Label htmlFor="section">Section Number</Label>
               <Input
                 id="section"
-                placeholder="Section (e.g., 1)"
+                type="text"
                 value={section}
                 onChange={handleSectionChange}
               />
