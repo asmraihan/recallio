@@ -16,6 +16,7 @@ import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
 import { ExportDialog } from "@/components/words/export-import";
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
+import { useDebounce } from "@/hooks/use-debounce";
 
 // Match the database schema
 interface Word {
@@ -52,10 +53,11 @@ export default function WordsPage() {
   
   const [sections, setSections] = useState<string[]>([]);
   const [sectionsLoaded, setSectionsLoaded] = useState(false);
-
+  const [searchInput, setSearchInput] = useState(searchParams.get("search") || "");
+  
   // Get values from URL or defaults
-  const search = searchParams.get("search") || "";
   const section = searchParams.get("section") || "";
+  const debouncedSearch = useDebounce(searchInput, 300);
 
   // Create a memoized function for updating URL params
   const createQueryString = useCallback(
@@ -76,6 +78,11 @@ export default function WordsPage() {
     const queryString = createQueryString(name, value);
     router.push(`${pathname}?${queryString}`, { scroll: false });
   }, [pathname, router, createQueryString]);
+
+  // Update URL when debounced search value changes
+  useEffect(() => {
+    updateFilters("search", debouncedSearch);
+  }, [debouncedSearch, updateFilters]);
 
   // Fetch sections on mount
   useEffect(() => {
@@ -115,11 +122,11 @@ export default function WordsPage() {
   });
 
   const filteredWords = words.filter((word) => {
-    if (!search) return true;
+    if (!debouncedSearch) return true;
     const matchesSearch =
-      word.germanWord.toLowerCase().includes(search.toLowerCase()) ||
-      (word.englishTranslation?.toLowerCase().includes(search.toLowerCase()) ?? false) ||
-      (word.banglaTranslation?.toLowerCase().includes(search.toLowerCase()) ?? false);
+      word.germanWord.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
+      (word.englishTranslation?.toLowerCase().includes(debouncedSearch.toLowerCase()) ?? false) ||
+      (word.banglaTranslation?.toLowerCase().includes(debouncedSearch.toLowerCase()) ?? false);
     return matchesSearch;
   });
 
@@ -161,8 +168,8 @@ export default function WordsPage() {
         <div className="flex flex-1 items-center gap-2">
           <Input
             placeholder="Search words..."
-            value={search}
-            onChange={(e) => updateFilters("search", e.target.value)}
+            value={searchInput}
+            onChange={(e) => setSearchInput(e.target.value)}
             className="max-w-sm"
           />
           <Select
