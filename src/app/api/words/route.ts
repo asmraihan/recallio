@@ -22,7 +22,7 @@ export async function POST(req: Request) {
   try {
     const session = await getServerSession(authOptions);
     if (!session?.user?.id) {
-      return new NextResponse(JSON.stringify({ error: "Unauthorized" }), { 
+      return new NextResponse(JSON.stringify({ error: "Unauthorized" }), {
         status: 401,
         headers: { "Content-Type": "application/json" }
       });
@@ -61,13 +61,13 @@ export async function POST(req: Request) {
     });
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return new NextResponse(JSON.stringify({ errors: error.errors }), { 
+      return new NextResponse(JSON.stringify({ errors: error.errors }), {
         status: 400,
         headers: { "Content-Type": "application/json" }
       });
     }
     console.error("[WORDS_POST]", error);
-    return new NextResponse(JSON.stringify({ error: "Internal error" }), { 
+    return new NextResponse(JSON.stringify({ error: "Internal error" }), {
       status: 500,
       headers: { "Content-Type": "application/json" }
     });
@@ -78,7 +78,7 @@ export async function GET(req: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
     if (!session?.user?.id) {
-      return new NextResponse(JSON.stringify({ error: "Unauthorized" }), { 
+      return new NextResponse(JSON.stringify({ error: "Unauthorized" }), {
         status: 401,
         headers: { "Content-Type": "application/json" }
       });
@@ -88,6 +88,11 @@ export async function GET(req: NextRequest) {
     const sectionParam = searchParams.get("section");
 
     let userWords;
+
+    if (!sectionParam) {
+      return NextResponse.json(userWords = []);
+    }
+    
     if (sectionParam) {
       userWords = await db
         .select()
@@ -104,7 +109,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.json(userWords);
   } catch (error) {
     console.error("[WORDS_GET]", error);
-    return new NextResponse(JSON.stringify({ error: "Internal error" }), { 
+    return new NextResponse(JSON.stringify({ error: "Internal error" }), {
       status: 500,
       headers: { "Content-Type": "application/json" }
     });

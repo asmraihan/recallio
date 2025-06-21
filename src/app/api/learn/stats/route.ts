@@ -59,16 +59,20 @@ export async function GET() {
     let streak = 0;
     const currentDate = new Date();
     currentDate.setHours(0, 0, 0, 0);
+    const countedDays = new Set<number>();
 
     for (const session of recentSessions) {
       const sessionDate = new Date(session.completedAt!);
       sessionDate.setHours(0, 0, 0, 0);
+      const sessionDay = sessionDate.getTime();
+      if (countedDays.has(sessionDay)) continue; // skip duplicate days
+      countedDays.add(sessionDay);
 
-      if (sessionDate.getTime() === currentDate.getTime()) {
+      if (sessionDay === currentDate.getTime()) {
         // Session completed today
         streak++;
         currentDate.setDate(currentDate.getDate() - 1);
-      } else if (sessionDate.getTime() === currentDate.getTime() - 86400000) {
+      } else if (sessionDay === currentDate.getTime() - 86400000) {
         // Session completed yesterday
         streak++;
         currentDate.setDate(currentDate.getDate() - 1);

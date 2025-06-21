@@ -266,8 +266,8 @@ export default function LearningSessionPage() {
   return (
     <div className="flex flex-col items-center justify-center p-4 relative overflow-hidden">
       {/* Subtle always-visible left/right background overlays */}
-      <div className="absolute left-0 top-0 h-full w-1/2 bg-green-100/60 pointer-events-none z-0 rounded-l-2xl" />
-      <div className="absolute right-0 top-0 h-full w-1/2 bg-red-100/60 pointer-events-none z-0 rounded-r-2xl" />
+      <div className="absolute left-0 top-0 h-full w-1/2 bg-green-100/20 pointer-events-none z-0 rounded-l-2xl" />
+      <div className="absolute right-0 top-0 h-full w-1/2 bg-red-100/20 pointer-events-none z-0 rounded-r-2xl" />
       {/* Main content stays above overlays */}
       <div className="relative z-10 w-full flex flex-col items-center">
         {/* Session Details */}
