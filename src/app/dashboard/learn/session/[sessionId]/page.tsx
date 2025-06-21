@@ -264,252 +264,258 @@ export default function LearningSessionPage() {
   const currentCard = cards[currentIndex];
 
   return (
-    <div className="flex flex-col items-center justify-center p-4">
-      {/* Session Details */}
-      <div className="w-full max-w-md mb-2 flex flex-col gap-1">
-        <div className="flex flex-wrap gap-2 items-center">
-          <span className="font-semibold text-xs ">
-            {sessionType.charAt(0).toUpperCase() + sessionType.slice(1)} Session
-          </span>
-      
-          {sections.length > 0 && (
-            <span className="text-xs px-2 py-0.5 rounded bg-primary/10 text-primary font-medium">
-            Section{sections.length > 1 ? 's' : ''}: {sections.join(", ")}
+    <div className="flex flex-col items-center justify-center p-4 relative overflow-hidden">
+      {/* Subtle always-visible left/right background overlays */}
+      <div className="absolute left-0 top-0 h-full w-1/2 bg-green-100/60 pointer-events-none z-0 rounded-l-2xl" />
+      <div className="absolute right-0 top-0 h-full w-1/2 bg-red-100/60 pointer-events-none z-0 rounded-r-2xl" />
+      {/* Main content stays above overlays */}
+      <div className="relative z-10 w-full flex flex-col items-center">
+        {/* Session Details */}
+        <div className="w-full max-w-md mb-2 flex flex-col gap-1">
+          <div className="flex flex-wrap gap-2 items-center">
+            <span className="font-semibold text-xs">
+              {sessionType.charAt(0).toUpperCase() + sessionType.slice(1)} Session
             </span>
-          )}
-        </div>
-        <div className="flex items-center gap-2">
-          <div className="text-xs text-muted-foreground">
-            Progress: {correctCount + incorrectCount} / {words.length} words
+        
+            {sections.length > 0 && (
+              <span className="text-xs px-2 py-0.5 rounded bg-primary/10 text-primary font-medium">
+              Section{sections.length > 1 ? 's' : ''}: {sections.join(", ")}
+              </span>
+            )}
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="text-xs text-muted-foreground">
+              Progress: {correctCount + incorrectCount} / {words.length} words
+            </div>
           </div>
         </div>
-      </div>
 
-      <motion.div
-        className="w-full max-w-md relative"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-      >
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={currentIndex}
-            className={clsx(
-              "card-container",
-              dragFeedback === 'plus' && 'border-3 border-green-300 rounded-2xl',
-              dragFeedback === 'minus' && 'border-3 border-red-300 rounded-2xl'
-            )}
-            style={{ x, rotate: cardRotate, opacity: 1 }}
-            drag="x"
-            dragConstraints={{ left: 0, right: 0 }}
-            dragElastic={0.7}
-            onDragEnd={handleDragEnd}
-            onDrag={handleDrag}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            transition={{ type: "spring", stiffness: 300, damping: 25 }}
-            whileTap={{ cursor: currentIndex === lastUnansweredIndex && !currentCard.answered ? "grabbing" : "grab" }}
-          >
-            <Card
+        <motion.div
+          className="w-full max-w-md relative"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+        >
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={currentIndex}
               className={clsx(
-                "relative cursor-grab select-none transform-gpu card-content perspective-1000",
-                "border-2 overflow-hidden hover:cursor-grab active:cursor-grabbing shadow-xl",
-                "transition-transform duration-500",
-                "min-h-[420px] md:min-h-[440px] lg:min-h-[480px]"
+                "card-container",
+                dragFeedback === 'plus' && 'border-3 border-green-300 rounded-2xl',
+                dragFeedback === 'minus' && 'border-3 border-red-300 rounded-2xl'
               )}
-              onClick={toggleFlip}
-              style={{ opacity: 1 }}
+              style={{ x, rotate: cardRotate, opacity: 1 }}
+              drag="x"
+              dragConstraints={{ left: 0, right: 0 }}
+              dragElastic={0.7}
+              onDragEnd={handleDragEnd}
+              onDrag={handleDrag}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              transition={{ type: "spring", stiffness: 300, damping: 25 }}
+              whileTap={{ cursor: currentIndex === lastUnansweredIndex && !currentCard.answered ? "grabbing" : "grab" }}
             >
-              {/* Star Button and Progress Pills (not rotating) */}
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleMarkImportant(currentCard.word);
-                }}
-                className="absolute top-4 right-4 z-10 cursor-pointer"
-              >
-                <Star
-                  className={clsx(
-                    "h-6 w-6 transition-colors",
-                    important[currentCard.word.id] ? "fill-yellow-400 text-yellow-400" : "text-gray-300"
-                  )}
-                />
-              </button>
-              <div className="absolute top-4 left-4 flex gap-2 min-w-[110px]">
-                {dragFeedback === 'plus' ? (
-                  <motion.div
-                    key="plus"
-                    initial={{ opacity: 0, y: -10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: 10 }}
-                    className="rounded-full bg-green-100 px-3 py-1 text-sm text-green-700 font-bold"
-                  >
-                    +1
-                  </motion.div>
-                ) : dragFeedback === 'minus' ? (
-                  <motion.div
-                    key="minus"
-                    initial={{ opacity: 0, y: -10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: 10 }}
-                    className="rounded-full bg-red-100 px-3 py-1 text-sm text-red-700 font-bold"
-                  >
-                    -1
-                  </motion.div>
-                ) : (
-                  <>
-                    <div className="rounded-full bg-green-100 px-3 py-1 text-sm text-green-700">
-                      ✓ {correctCount}
-                    </div>
-                    <div className="rounded-full bg-red-100 px-3 py-1 text-sm text-red-700">
-                      ✗ {incorrectCount}
-                    </div>
-                  </>
+              <Card
+                className={clsx(
+                  "relative cursor-grab select-none transform-gpu card-content perspective-1000",
+                  "border-2 overflow-hidden hover:cursor-grab active:cursor-grabbing shadow-xl",
+                  "transition-transform duration-500",
+                  "min-h-[420px] md:min-h-[440px] lg:min-h-[480px]"
                 )}
-              </div>
-
-              {/* Rotating Content */}
-              <motion.div
-                className="relative w-full h-full"
-                style={{
-                  perspective: 1000,
-                  minHeight: 300, // increased from 240
-                }}
+                onClick={toggleFlip}
+                style={{ opacity: 1 }}
               >
-                {/* Card Front */}
-                <motion.div
-                  className="absolute inset-0 w-full h-full"
-                  style={{
-                    rotateX: isFlipped ? 180 : 0,
-                    opacity: isFlipped ? 0 : 1,
-                    backfaceVisibility: "hidden",
-                    transition: "transform 0.5s, opacity 0.3s"
+                {/* Star Button and Progress Pills (not rotating) */}
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleMarkImportant(currentCard.word);
                   }}
-                  animate={{ rotateX: isFlipped ? 180 : 0, opacity: isFlipped ? 0 : 1 }}
-                  transition={{ duration: 0.2, ease: "easeInOut" }}
+                  className="absolute top-4 right-4 z-10 cursor-pointer"
                 >
-                  <CardContent className="p-6 flex items-center justify-center min-h-[280px] md:min-h-[340px] lg:min-h-[400px]">
-                    <div className="text-2xl font-bold">
-                      {direction === "german_to_english" && currentCard.word.germanWord}
-                      {direction === "english_to_german" && currentCard.word.englishTranslation}
-                      {direction === "german_to_bangla" && currentCard.word.germanWord}
-                      {direction === "bangla_to_german" && currentCard.word.banglaTranslation}
-                    </div>
-                  </CardContent>
-                </motion.div>
-                {/* Card Back */}
+                  <Star
+                    className={clsx(
+                      "h-6 w-6 transition-colors",
+                      important[currentCard.word.id] ? "fill-yellow-400 text-yellow-400" : "text-gray-300"
+                    )}
+                  />
+                </button>
+                <div className="absolute top-4 left-4 flex gap-2 min-w-[110px]">
+                  {dragFeedback === 'plus' ? (
+                    <motion.div
+                      key="plus"
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: 10 }}
+                      className="rounded-full bg-green-100 px-3 py-1 text-sm text-green-700 font-bold"
+                    >
+                      +1
+                    </motion.div>
+                  ) : dragFeedback === 'minus' ? (
+                    <motion.div
+                      key="minus"
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: 10 }}
+                      className="rounded-full bg-red-100 px-3 py-1 text-sm text-red-700 font-bold"
+                    >
+                      -1
+                    </motion.div>
+                  ) : (
+                    <>
+                      <div className="rounded-full bg-green-100 px-3 py-1 text-sm text-green-700">
+                        ✓ {correctCount}
+                      </div>
+                      <div className="rounded-full bg-red-100 px-3 py-1 text-sm text-red-700">
+                        ✗ {incorrectCount}
+                      </div>
+                    </>
+                  )}
+                </div>
+
+                {/* Rotating Content */}
                 <motion.div
-                  className="absolute inset-0 w-full h-full"
+                  className="relative w-full h-full"
                   style={{
-                    rotateX: isFlipped ? 0 : -180,
-                    opacity: isFlipped ? 1 : 0,
-                    backfaceVisibility: "hidden",
-                    transition: "transform 0.5s, opacity 0.3s"
+                    perspective: 1000,
+                    minHeight: 300, // increased from 240
                   }}
-                  animate={{ rotateX: isFlipped ? 0 : -180, opacity: isFlipped ? 1 : 0 }}
-                  transition={{ duration: 0.2, ease: "easeInOut" }}
                 >
-                  <CardContent className="p-6 flex flex-col items-center justify-center min-h-[280px] md:min-h-[340px] lg:min-h-[400px]">
-                    {direction === "german_to_english" && (
-                      <>
-                        <p className="text-2xl font-bold mb-4">{currentCard.word.englishTranslation}</p>
-                        {currentCard.word.banglaTranslation && (
-                          <p className="text-lg text-gray-600">{currentCard.word.banglaTranslation}</p>
-                        )}
-                        {currentCard.word.notes && (
-                          <p className="text-sm text-gray-500 mt-8 text-center">N.B. {currentCard.word.notes}</p>
-                        )}
-                      </>
-                    )}
-                    {direction === "english_to_german" && (
-                      <>
-                        <p className="text-2xl font-bold mb-4">{currentCard.word.germanWord}</p>
-                        {currentCard.word.banglaTranslation && (
-                          <p className="text-lg text-gray-600">{currentCard.word.banglaTranslation}</p>
-                        )}
-                        {currentCard.word.notes && (
-                          <p className="text-sm text-gray-500 mt-8 text-center">N.B. {currentCard.word.notes}</p>
-                        )}
-                      </>
-                    )}
-                    {direction === "german_to_bangla" && (
-                      <>
-                        <p className="text-2xl font-bold mb-4">{currentCard.word.banglaTranslation}</p>
-                        {currentCard.word.englishTranslation && (
-                          <p className="text-lg text-gray-600">{currentCard.word.englishTranslation}</p>
-                        )}
-                        {currentCard.word.notes && (
-                          <p className="text-sm text-gray-500 mt-8 text-center">N.B. {currentCard.word.notes}</p>
-                        )}
-                      </>
-                    )}
-                    {direction === "bangla_to_german" && (
-                      <>
-                        <p className="text-2xl font-bold mb-4">{currentCard.word.germanWord}</p>
-                        {currentCard.word.englishTranslation && (
-                          <p className="text-lg text-gray-600">{currentCard.word.englishTranslation}</p>
-                        )}
-                        {currentCard.word.notes && (
-                          <p className="text-sm text-gray-500 mt-8 text-center">N.B. {currentCard.word.notes}</p>
-                        )}
-                      </>
-                    )}
-                  </CardContent>
+                  {/* Card Front */}
+                  <motion.div
+                    className="absolute inset-0 w-full h-full"
+                    style={{
+                      rotateX: isFlipped ? 180 : 0,
+                      opacity: isFlipped ? 0 : 1,
+                      backfaceVisibility: "hidden",
+                      transition: "transform 0.5s, opacity 0.3s"
+                    }}
+                    animate={{ rotateX: isFlipped ? 180 : 0, opacity: isFlipped ? 0 : 1 }}
+                    transition={{ duration: 0.2, ease: "easeInOut" }}
+                  >
+                    <CardContent className="p-6 flex items-center justify-center min-h-[280px] md:min-h-[340px] lg:min-h-[400px]">
+                      <div className="text-2xl font-bold">
+                        {direction === "german_to_english" && currentCard.word.germanWord}
+                        {direction === "english_to_german" && currentCard.word.englishTranslation}
+                        {direction === "german_to_bangla" && currentCard.word.germanWord}
+                        {direction === "bangla_to_german" && currentCard.word.banglaTranslation}
+                      </div>
+                    </CardContent>
+                  </motion.div>
+                  {/* Card Back */}
+                  <motion.div
+                    className="absolute inset-0 w-full h-full"
+                    style={{
+                      rotateX: isFlipped ? 0 : -180,
+                      opacity: isFlipped ? 1 : 0,
+                      backfaceVisibility: "hidden",
+                      transition: "transform 0.5s, opacity 0.3s"
+                    }}
+                    animate={{ rotateX: isFlipped ? 0 : -180, opacity: isFlipped ? 1 : 0 }}
+                    transition={{ duration: 0.2, ease: "easeInOut" }}
+                  >
+                    <CardContent className="p-6 flex flex-col items-center justify-center min-h-[280px] md:min-h-[340px] lg:min-h-[400px]">
+                      {direction === "german_to_english" && (
+                        <>
+                          <p className="text-2xl font-bold mb-4">{currentCard.word.englishTranslation}</p>
+                          {currentCard.word.banglaTranslation && (
+                            <p className="text-lg text-gray-600">{currentCard.word.banglaTranslation}</p>
+                          )}
+                          {currentCard.word.notes && (
+                            <p className="text-sm text-gray-500 mt-8 text-center">N.B. {currentCard.word.notes}</p>
+                          )}
+                        </>
+                      )}
+                      {direction === "english_to_german" && (
+                        <>
+                          <p className="text-2xl font-bold mb-4">{currentCard.word.germanWord}</p>
+                          {currentCard.word.banglaTranslation && (
+                            <p className="text-lg text-gray-600">{currentCard.word.banglaTranslation}</p>
+                          )}
+                          {currentCard.word.notes && (
+                            <p className="text-sm text-gray-500 mt-8 text-center">N.B. {currentCard.word.notes}</p>
+                          )}
+                        </>
+                      )}
+                      {direction === "german_to_bangla" && (
+                        <>
+                          <p className="text-2xl font-bold mb-4">{currentCard.word.banglaTranslation}</p>
+                          {currentCard.word.englishTranslation && (
+                            <p className="text-lg text-gray-600">{currentCard.word.englishTranslation}</p>
+                          )}
+                          {currentCard.word.notes && (
+                            <p className="text-sm text-gray-500 mt-8 text-center">N.B. {currentCard.word.notes}</p>
+                          )}
+                        </>
+                      )}
+                      {direction === "bangla_to_german" && (
+                        <>
+                          <p className="text-2xl font-bold mb-4">{currentCard.word.germanWord}</p>
+                          {currentCard.word.englishTranslation && (
+                            <p className="text-lg text-gray-600">{currentCard.word.englishTranslation}</p>
+                          )}
+                          {currentCard.word.notes && (
+                            <p className="text-sm text-gray-500 mt-8 text-center">N.B. {currentCard.word.notes}</p>
+                          )}
+                        </>
+                      )}
+                    </CardContent>
+                  </motion.div>
                 </motion.div>
-              </motion.div>
 
-              {/* Swipe progress indicators (not rotating) */}
-              <motion.div
-                className="absolute inset-0 pointer-events-none"
-                style={{ opacity: leftIndicatorProgress }}
-              >
-                <div className="absolute inset-0 bg-green-500/10" />
-                <div className="absolute left-1/4 bottom-1/3 -translate-y-1/2 text-green-300 text-lg font-bold">
-                  Know
-                </div>
-              </motion.div>
-              <motion.div
-                className="absolute inset-0 pointer-events-none"
-                style={{ opacity: rightIndicatorProgress }}
-              >
-                <div className="absolute inset-0 bg-red-500/10" />
-                <div className="absolute right-1/4  bottom-1/3 -translate-y-1/2 text-red-300 text-lg font-bold">
-                  Don&apos;t Know
-                </div>
-              </motion.div>
-            </Card>
-          </motion.div>
-        </AnimatePresence>
+                {/* Swipe progress indicators (not rotating) */}
+                <motion.div
+                  className="absolute inset-0 pointer-events-none"
+                  style={{ opacity: leftIndicatorProgress }}
+                >
+                  <div className="absolute inset-0 bg-green-500/20" />
+                  <div className="absolute left-1/4 bottom-1/3 -translate-y-1/2 text-green-500 text-lg font-bold">
+                    Know
+                  </div>
+                </motion.div>
+                <motion.div
+                  className="absolute inset-0 pointer-events-none"
+                  style={{ opacity: rightIndicatorProgress }}
+                >
+                  <div className="absolute inset-0 bg-red-500/20" />
+                  <div className="absolute right-1/4  bottom-1/3 -translate-y-1/2 text-red-500 text-lg font-bold">
+                    Don&apos;t Know
+                  </div>
+                </motion.div>
+              </Card>
+            </motion.div>
+          </AnimatePresence>
 
-        {/* Mobile Previous Button */}
-        {currentIndex > 0 && (
-          <Button
-            size="icon"
-            variant="ghost"
-            onClick={(e) => {
-              e.stopPropagation();
-              goToPreviousCard();
-            }}
-            className="absolute -left-4 -bottom-4 z-10 bg-background shadow-md cursor-pointer"
-          >
-            <Undo className="h-4 w-4" />
-          </Button>
-        )}
-      </motion.div>
+          {/* Mobile Previous Button */}
+          {currentIndex > 0 && (
+            <Button
+              size="icon"
+              variant="ghost"
+              onClick={(e) => {
+                e.stopPropagation();
+                goToPreviousCard();
+              }}
+              className="absolute -left-4 -bottom-4 z-10 bg-background shadow-md cursor-pointer"
+            >
+              <Undo className="h-4 w-4" />
+            </Button>
+          )}
+        </motion.div>
 
-      {/* Desktop Navigation */}
-      {/* REMOVE DESKTOP NAVIGATION BUTTONS */}
+        {/* Desktop Navigation */}
+        {/* REMOVE DESKTOP NAVIGATION BUTTONS */}
 
-      {/* Mobile Instructions */}
-      <p className="text-center text-sm text-gray-500 mt-4">
-        {showContinueHint ? (
-          <span className="text-blue-500">Drag card in any direction to continue learning.</span>
-        ) : currentIndex < lastUnansweredIndex ? (
-          <span className="text-blue-500">Drag to return to current card</span>
-        ) : (
-          "Tap to flip • Drag left for \"Know\" • Drag right for \"Don't Know\""
-        )}
-      </p>
+        {/* Mobile Instructions */}
+        <p className="text-center text-sm text-gray-500 mt-4">
+          {showContinueHint ? (
+            <span className="text-blue-500">Drag card in any direction to continue learning.</span>
+          ) : currentIndex < lastUnansweredIndex ? (
+            <span className="text-blue-500">Drag to return to current card</span>
+          ) : (
+            "Tap to flip • Drag left for \"Know\" • Drag right for \"Don't Know\""
+          )}
+        </p>
+      </div>
     </div>
   );
 }

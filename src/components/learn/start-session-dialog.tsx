@@ -221,6 +221,7 @@ export function StartSessionDialog({ children, mode = "new" }: StartSessionDialo
           <div className="grid gap-2">
             <Label htmlFor="section">Sections</Label>
             <MultiSelect
+            modalPopover
               options={
                 sectionsData?.map((section: string) => ({
                   value: section,
