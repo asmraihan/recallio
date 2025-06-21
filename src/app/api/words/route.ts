@@ -89,24 +89,30 @@ export async function GET(req: NextRequest) {
 
     let userWords;
 
-    if (!sectionParam) {
-      return NextResponse.json(userWords = []);
+    if (sectionParam === "") {
+      return NextResponse.json([]);
     }
-    
+
+    if (sectionParam === "all") {
+      userWords = await db
+        .select()
+        .from(words)
+        .where(eq(words.createdBy, session.user.id))
+        .orderBy(words.createdAt);
+      return NextResponse.json(userWords);
+    }
+
     if (sectionParam) {
       userWords = await db
         .select()
         .from(words)
         .where(and(eq(words.createdBy, session.user.id), eq(words.section, sectionParam)))
         .orderBy(words.createdAt);
-    } else {
-      userWords = await db
-        .select()
-        .from(words)
-        .where(eq(words.createdBy, session.user.id))
-        .orderBy(words.createdAt);
+      return NextResponse.json(userWords);
     }
-    return NextResponse.json(userWords);
+
+    // If no section param at all, return empty array
+    return NextResponse.json([]);
   } catch (error) {
     console.error("[WORDS_GET]", error);
     return new NextResponse(JSON.stringify({ error: "Internal error" }), {

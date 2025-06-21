@@ -102,7 +102,9 @@ export default function WordsPage() {
     queryKey: ["words", section],
     queryFn: async () => {
       let url = "/api/words";
-      if (section && section !== "all") {
+      if (section === "all") {
+        url += `?section=all`;
+      } else if (section) {
         url += `?section=${section}`;
       }
       const response = await fetch(url);
