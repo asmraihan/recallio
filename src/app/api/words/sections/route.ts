@@ -24,7 +24,12 @@ export async function GET() {
       .where(eq(words.createdBy, session.user.id))
       .groupBy(words.section)
       // Ensure sections are ordered by createdAt
-      .orderBy(sql` MIN(${words.createdAt})`)
+      // .orderBy(sql` MIN(${words.createdAt})`)
+      // Ensure sections are ordered numerically and alphabetically but like 1, 2 .... to 10, ... 12,... , C, D,......Z etc.
+      .orderBy(sql`CASE 
+        WHEN section ~ '^[0-9]+$' THEN CAST(section AS INTEGER)
+        ELSE NULL
+      END, section`);
 
     return NextResponse.json({
       sections: sections.map(s => s.section)

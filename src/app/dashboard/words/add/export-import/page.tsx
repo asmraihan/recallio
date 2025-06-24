@@ -10,7 +10,7 @@ export const metadata: Metadata = {
 
 export default function ExportImportPage() {
   return (
-    <div className="container max-w-6xl py-6 space-y-6">
+    <div className="container py-6 space-y-6">
       <div>
         <h1 className="text-3xl font-bold tracking-tight">Export/Import Words</h1>
         <p className="text-muted-foreground mt-2">
@@ -18,7 +18,7 @@ export default function ExportImportPage() {
         </p>
       </div>
 
-      <div className="grid gap-6 md:grid-cols-2">
+      <div className="grid gap-6 lg:grid-cols-2">
         {/* Export Card */}
         <Card className="flex flex-col">
           <CardHeader>
@@ -88,7 +88,9 @@ export default function ExportImportPage() {
                 <h3 className="text-lg font-medium mb-2">Format Example</h3>
                 <div className="bg-muted p-3 rounded-md">
                   <code className="text-sm">
-                    germanWord,englishTranslation,banglaTranslation,section<br />
+                    germanWord,englishTranslation,
+                    <br />
+                    banglaTranslation,section<br />
                     Haus,house,বাড়ি,1<br />
                     Brot,bread,রুটি,1
                   </code>

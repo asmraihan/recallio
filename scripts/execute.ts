@@ -32,10 +32,20 @@ async function execute() {
     //   sql`UPDATE words SET section = CONCAT('Sec ', section);`
     // );
 
-    // Update all sections to remove "Sec " prefix
-    await db.execute(
-      sql`UPDATE words SET section = SUBSTRING(section FROM 5) WHERE section LIKE 'Sec %';`
-    );
+ // Update all words section 
+
+    // await db.execute(
+    //   sql`UPDATE words SET section = 
+    //     CASE 
+    //       WHEN section = '2 21' THEN '2 01'
+    //       WHEN section = '2 22' THEN '2 02'
+    //       WHEN section = '2 23' THEN '2 03'
+    //       WHEN section = '2 24' THEN '2 04'
+    //       WHEN section = '2 25' THEN '2 05'
+    //       WHEN section = '2 26' THEN '2 06'
+    //       ELSE section
+    //     END;`
+    // );
 
     console.log("Successfully updated all sections!");
     process.exit(0);
