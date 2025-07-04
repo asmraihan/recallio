@@ -19,6 +19,7 @@
   "dependencies": {
     "@auth/core": "^0.34.2",
     "@auth/drizzle-adapter": "^1.9.1",
+    "@echristian/edge-tts": "^0.0.14",
     "@hookform/resolvers": "^5.1.1",
     "@neondatabase/serverless": "^1.0.1",
     "@radix-ui/react-avatar": "^1.1.10",

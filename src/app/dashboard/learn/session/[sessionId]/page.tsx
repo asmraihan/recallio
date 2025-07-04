@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Loader2, Star, Undo } from "lucide-react";
+import { Loader2, Star, Undo, Volume2 } from "lucide-react";
 import { toast } from "sonner";
 import clsx from "clsx";
 import { motion, AnimatePresence, useMotionValue, useTransform } from "framer-motion";
@@ -50,6 +50,51 @@ export default function LearningSessionPage() {
 
   const leftIndicatorProgress = useTransform(x, [-300, 0], [1, 0]);
   const rightIndicatorProgress = useTransform(x, [0, 300], [0, 1]);
+
+  // TTS state
+  const [ttsLoading, setTtsLoading] = useState(false);
+  const [ttsAudio, setTtsAudio] = useState<HTMLAudioElement | null>(null);
+  const [ttsVoices, setTtsVoices] = useState<any[]>([]);
+  const [ttsVoice, setTtsVoice] = useState<string>("de-DE-AmalaNeural");
+  let longPressTimer: NodeJS.Timeout | null = null;
+
+  // Fetch voices for picker (on demand)
+  const fetchVoices = async () => {
+    if (ttsVoices.length > 0) return;
+    try {
+      const res = await fetch("/api/tts");
+      if (res.ok) {
+        const voices = await res.json();
+        setTtsVoices(voices);
+      }
+    } catch {}
+  };
+
+  // Play TTS audio
+  const playTTS = async (text: string) => {
+    setTtsLoading(true);
+    try {
+      const res = await fetch("/api/tts", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text, voice: ttsVoice }),
+      });
+      if (!res.ok) throw new Error("TTS failed");
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const audio = new Audio(url);
+      setTtsAudio(audio);
+      audio.play();
+      audio.onended = () => {
+        URL.revokeObjectURL(url);
+        setTtsAudio(null);
+      };
+    } catch {
+      toast.error("TTS playback failed");
+    } finally {
+      setTtsLoading(false);
+    }
+  };
 
   useEffect(() => {
     async function fetchSession() {
@@ -482,6 +527,24 @@ export default function LearningSessionPage() {
                     Don&apos;t Know
                   </div>
                 </motion.div>
+
+                {/* TTS Button */}
+                {(direction === "german_to_english" || direction === "german_to_bangla" || direction === "bangla_to_german" || direction === "english_to_german") && (
+                  <button
+                    className="absolute bottom-4 right-4 z-20 bg-white/90 rounded-full p-2 shadow-lg border hover:bg-primary/10 transition"
+                    disabled={ttsLoading}
+                    onClick={e => {
+                      e.stopPropagation();
+                      let text = "";
+                      if (direction === "german_to_english" || direction === "german_to_bangla") text = currentCard.word.germanWord;
+                      else if (direction === "english_to_german" || direction === "bangla_to_german") text = currentCard.word.germanWord;
+                      playTTS(text);
+                    }}
+                    title="Play German TTS"
+                  >
+                    <Volume2 className={clsx("h-6 w-6", ttsLoading && "animate-pulse")}/>
+                  </button>
+                )}
               </Card>
             </motion.div>
           </AnimatePresence>
