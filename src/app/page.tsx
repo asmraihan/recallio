@@ -23,9 +23,9 @@ export default function Home() {
           </div>
         </div>
       </header>
-      <main className="flex-1 flex flex-col items-center justify-center">
+      <main className="flex-1 flex flex-col items-center justify-center px-4">
         <section className="w-full flex-1 flex flex-col items-center justify-center">
-          <div className="container flex max-w-[64rem] flex-col items-center gap-4 text-center justify-center flex-1 py-12">
+          <div className="container flex max-w-[64rem] flex-col items-center gap-4 text-center justify-center flex-1 px-4 py-12">
             <h1 className="font-heading text-3xl sm:text-5xl md:text-6xl lg:text-7xl">
               Master German with{" "}
               <span className="text-primary">English & Bangla</span> Translations

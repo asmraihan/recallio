@@ -168,12 +168,22 @@ export default function WordsPage() {
 
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div className="flex flex-1 items-center gap-2">
-          <Input
-            placeholder="Search words..."
-            value={searchInput}
-            onChange={(e) => setSearchInput(e.target.value)}
-            className="max-w-sm"
-          />
+          <div className="relative w-full max-w-sm">
+            <Input
+              placeholder="Search words..."
+              value={searchInput}
+              onChange={(e) => setSearchInput(e.target.value)}
+              className="pr-20 w-full"
+            />
+            {debouncedSearch && (
+              <span
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground pointer-events-none select-none bg-white dark:bg-background px-1"
+                style={{ zIndex: 2 }}
+              >
+                {filteredWords.length} found
+              </span>
+            )}
+          </div>
           <Select
             value={section}
             onValueChange={(value) => updateFilters("section", value)}
@@ -185,7 +195,7 @@ export default function WordsPage() {
               <SelectItem value="all">All Sections</SelectItem>
               {sections.map((sectionValue) => (
                 <SelectItem key={sectionValue} value={sectionValue}>
-                 Section {sectionValue}
+                  Section {sectionValue}
                 </SelectItem>
               ))}
             </SelectContent>
