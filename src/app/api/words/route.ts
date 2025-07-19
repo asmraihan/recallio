@@ -2,7 +2,7 @@ import { NextResponse, NextRequest } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { words } from "@/lib/db/schema";
+import { words, learningProgress } from "@/lib/db/schema";
 import { eq, and } from "drizzle-orm";
 import { z } from "zod";
 
@@ -93,10 +93,33 @@ export async function GET(req: NextRequest) {
       return NextResponse.json([]);
     }
 
+
+    // Helper: select fields from words + important from learningProgress
+    const selectFields = {
+      id: words.id,
+      germanWord: words.germanWord,
+      englishTranslation: words.englishTranslation,
+      banglaTranslation: words.banglaTranslation,
+      exampleSentence: words.exampleSentence,
+      notes: words.notes,
+      section: words.section,
+      createdBy: words.createdBy,
+      createdAt: words.createdAt,
+      updatedAt: words.updatedAt,
+      important: learningProgress.important,
+    };
+
     if (sectionParam === "all") {
       userWords = await db
-        .select()
+        .select(selectFields)
         .from(words)
+        .leftJoin(
+          learningProgress,
+          and(
+            eq(words.id, learningProgress.wordId),
+            eq(learningProgress.userId, session.user.id)
+          )
+        )
         .where(eq(words.createdBy, session.user.id))
         .orderBy(words.createdAt);
       return NextResponse.json(userWords);
@@ -104,8 +127,15 @@ export async function GET(req: NextRequest) {
 
     if (sectionParam) {
       userWords = await db
-        .select()
+        .select(selectFields)
         .from(words)
+        .leftJoin(
+          learningProgress,
+          and(
+            eq(words.id, learningProgress.wordId),
+            eq(learningProgress.userId, session.user.id)
+          )
+        )
         .where(and(eq(words.createdBy, session.user.id), eq(words.section, sectionParam)))
         .orderBy(words.createdAt);
       return NextResponse.json(userWords);
