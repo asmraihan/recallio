@@ -18,7 +18,6 @@ import { ExportDialog } from "@/components/words/export-import";
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import { useDebounce } from "@/hooks/use-debounce";
 
-// Match the database schema
 interface Word {
   id: string;
   germanWord: string;
@@ -32,7 +31,6 @@ interface Word {
   updatedAt: Date;
 }
 
-// Type for the raw API response
 interface WordResponse {
   id: string;
   germanWord: string;
@@ -55,11 +53,9 @@ export default function WordsPage() {
   const [sectionsLoaded, setSectionsLoaded] = useState(false);
   const [searchInput, setSearchInput] = useState(searchParams.get("search") || "");
   
-  // Get values from URL or defaults
-  const section = searchParams.get("section") || "";
+  const section = searchParams.get("section");
   const debouncedSearch = useDebounce(searchInput, 300);
 
-  // Create a memoized function for updating URL params
   const createQueryString = useCallback(
     (name: string, value: string) => {
       const params = new URLSearchParams(searchParams.toString());
@@ -73,13 +69,11 @@ export default function WordsPage() {
     [searchParams]
   );
 
-  // Update URL when filters change
   const updateFilters = useCallback((name: string, value: string) => {
     const queryString = createQueryString(name, value);
     router.push(`${pathname}?${queryString}`, { scroll: false });
   }, [pathname, router, createQueryString]);
 
-  // Update URL when debounced search value changes
   useEffect(() => {
     updateFilters("search", debouncedSearch);
   }, [debouncedSearch, updateFilters]);
@@ -90,22 +84,31 @@ export default function WordsPage() {
       .then(res => res.json())
       .then((data: { sections: string[] }) => {
         setSections(data.sections);
-        if (!section && data.sections.length > 0) {
+        // Only set section if it is not present in the URL at all
+        if (searchParams.get("section") == null && data.sections.length > 0) {
           updateFilters("section", data.sections[0]);
         }
         setSectionsLoaded(true);
       });
-  }, [section, updateFilters]);
+  }, [searchParams, updateFilters]);
 
-  // Fetch words for the selected section
+  // Fetch words for the selected section and filter
+  const filter = searchParams.get("filter") || "default";
   const { data: words = [], isLoading, error, refetch } = useQuery<Word[]>({
-    queryKey: ["words", section],
+    queryKey: ["words", section, filter],
     queryFn: async () => {
       let url = "/api/words";
+      const params = new URLSearchParams();
       if (section === "all") {
-        url += `?section=all`;
+        params.set("section", "all");
       } else if (section) {
-        url += `?section=${section}`;
+        params.set("section", section);
+      }
+      if (filter && filter !== "default") {
+        params.set("filter", filter);
+      }
+      if ([...params].length > 0) {
+        url += `?${params.toString()}`;
       }
       const response = await fetch(url);
       if (!response.ok) {
@@ -185,7 +188,7 @@ export default function WordsPage() {
             )}
           </div>
           <Select
-            value={section}
+            value={section ?? undefined}
             onValueChange={(value) => updateFilters("section", value)}
           >
             <SelectTrigger className="w-[180px]">
@@ -201,27 +204,20 @@ export default function WordsPage() {
             </SelectContent>
           </Select>
         </div>
-        {/* <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2">
           <Select
-            value={sortBy}
-            onValueChange={(value: "date" | "word") => setSortBy(value)}
+            value={searchParams.get("filter") || "default"}
+            onValueChange={(value) => updateFilters("filter", value)}
           >
             <SelectTrigger className="w-[180px]">
-              <SelectValue placeholder="Sort by" />
+              <SelectValue placeholder="Filter by" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="date">Date Added</SelectItem>
-              <SelectItem value="word">German Word</SelectItem>
+              <SelectItem value="default">Default</SelectItem>
+              <SelectItem value="important">Important</SelectItem>
             </SelectContent>
           </Select>
-          <Button
-            variant="outline"
-            size="icon"
-            onClick={() => setSortOrder(sortOrder === "asc" ? "desc" : "asc")}
-          >
-            {sortOrder === "asc" ? "↑" : "↓"}
-          </Button>
-        </div> */}
+        </div>
       </div>
 
       {isLoading ? (

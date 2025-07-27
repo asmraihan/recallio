@@ -86,15 +86,15 @@ export async function GET(req: NextRequest) {
 
     const { searchParams } = new URL(req.url);
     const sectionParam = searchParams.get("section");
+    const filterParam = searchParams.get("filter");
 
     let userWords;
 
-    if (sectionParam === "") {
+    if (!sectionParam || sectionParam === "") {
+      console.log("First condition met, returning empty array");
       return NextResponse.json([]);
     }
 
-
-    // Helper: select fields from words + important from learningProgress
     const selectFields = {
       id: words.id,
       germanWord: words.germanWord,
@@ -109,40 +109,31 @@ export async function GET(req: NextRequest) {
       important: learningProgress.important,
     };
 
-    if (sectionParam === "all") {
-      userWords = await db
-        .select(selectFields)
-        .from(words)
-        .leftJoin(
-          learningProgress,
-          and(
-            eq(words.id, learningProgress.wordId),
-            eq(learningProgress.userId, session.user.id)
-          )
-        )
-        .where(eq(words.createdBy, session.user.id))
-        .orderBy(words.createdAt);
-      return NextResponse.json(userWords);
+    let whereCondition;
+    if (sectionParam && sectionParam !== "all") {
+      whereCondition = and(eq(words.createdBy, session.user.id), eq(words.section, sectionParam));
+    } else {
+      whereCondition = eq(words.createdBy, session.user.id);
     }
 
-    if (sectionParam) {
-      userWords = await db
-        .select(selectFields)
-        .from(words)
-        .leftJoin(
-          learningProgress,
-          and(
-            eq(words.id, learningProgress.wordId),
-            eq(learningProgress.userId, session.user.id)
-          )
+    userWords = await db
+      .select(selectFields)
+      .from(words)
+      .leftJoin(
+        learningProgress,
+        and(
+          eq(words.id, learningProgress.wordId),
+          eq(learningProgress.userId, session.user.id)
         )
-        .where(and(eq(words.createdBy, session.user.id), eq(words.section, sectionParam)))
-        .orderBy(words.createdAt);
-      return NextResponse.json(userWords);
-    }
+      )
+      .where(whereCondition)
+      .orderBy(words.createdAt);
 
-    // If no section param at all, return empty array
-    return NextResponse.json([]);
+    if (filterParam === "important") {
+      userWords = userWords.filter((w) => w.important === true);
+    }
+    
+    return NextResponse.json(userWords);
   } catch (error) {
     console.error("[WORDS_GET]", error);
     return new NextResponse(JSON.stringify({ error: "Internal error" }), {
