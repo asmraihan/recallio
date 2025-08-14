@@ -37,7 +37,7 @@ export default function LearningSessionPage() {
   const [correctCount, setCorrectCount] = useState(0);
   const [incorrectCount, setIncorrectCount] = useState(0);
   const [error, setError] = useState<string | null>(null);
-  const [important, setImportant] = useState<Record<string, boolean>>({});
+  // Remove local important state, rely on word.important
   const [showContinueHint, setShowContinueHint] = useState(false);
   const [dragFeedback, setDragFeedback] = useState<null | 'plus' | 'minus'>(null);
   const [lastUnansweredIndex, setLastUnansweredIndex] = useState<number>(0);
@@ -127,12 +127,7 @@ export default function LearningSessionPage() {
         setCurrentIndex(firstUnanswered === -1 ? fetchedWords.length - 1 : firstUnanswered);
         setLastUnansweredIndex(firstUnanswered === -1 ? fetchedWords.length - 1 : firstUnanswered);
 
-        // Initialize important state from backend
-        const importantMap: Record<string, boolean> = {};
-        fetchedWords.forEach((w: Word) => {
-          importantMap[w.id] = !!w.important;
-        });
-        setImportant(importantMap);
+  // No need to set important state, use word.important directly
       } catch (err: unknown) {
         setError(err instanceof Error ? err.message : "Unknown error");
       } finally {
@@ -225,8 +220,7 @@ export default function LearningSessionPage() {
   };
 
   const handleMarkImportant = async (word: Word) => {
-    const newValue = !important[word.id];
-    setImportant(prev => ({ ...prev, [word.id]: newValue }));
+    const newValue = !word.important;
     try {
       await fetch(`/api/learn/words/${word.id}/important`, {
         method: "POST",
@@ -234,6 +228,27 @@ export default function LearningSessionPage() {
         body: JSON.stringify({ important: newValue }),
       });
       toast.success(newValue ? "Marked as important" : "Unmarked as important");
+      // Refetch session data to update important status
+      if (sessionId) {
+        setLoading(true);
+        setError(null);
+        try {
+          const res = await fetch(`/api/learn/sessions/${sessionId}`);
+          if (!res.ok) throw new Error("Failed to fetch session data");
+          const data = await res.json();
+          const fetchedWords = data.words || [];
+          setWords(fetchedWords);
+          setCards(fetchedWords.map((word: Word & { answeredAt?: string | null, isCorrect?: boolean | null }) => ({
+            word,
+            answered: !!word.answeredAt,
+            isCorrect: word.isCorrect ?? undefined
+          })));
+        } catch (err: unknown) {
+          setError(err instanceof Error ? err.message : "Unknown error");
+        } finally {
+          setLoading(false);
+        }
+      }
     } catch {
       toast.error("Failed to update important status");
     }
@@ -381,7 +396,7 @@ export default function LearningSessionPage() {
                   <Star
                     className={clsx(
                       "h-6 w-6 transition-colors",
-                      important[currentCard.word.id] ? "fill-yellow-400 text-yellow-400" : "text-gray-300"
+                      currentCard.word.important ? "fill-yellow-400 text-yellow-400" : "text-gray-300"
                     )}
                   />
                 </button>

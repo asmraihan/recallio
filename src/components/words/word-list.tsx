@@ -12,6 +12,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Pencil, Trash2, Star, Volume2, ChevronLeft, ChevronRight, Eye } from "lucide-react";
 import { toast } from "sonner";
+import { useQueryClient } from "@tanstack/react-query";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 // Match the database schema
@@ -34,17 +35,13 @@ interface WordListProps {
 }
 
 export function WordList({ words }: WordListProps) {
+  const queryClient = useQueryClient();
   const [isDeleting, setIsDeleting] = useState<string | null>(null);
   const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
   const [viewIndex, setViewIndex] = useState<number | null>(null);
   const [ttsLoading, setTtsLoading] = useState(false);
   const [ttsAudio, setTtsAudio] = useState<HTMLAudioElement | null>(null);
-  // Initialize all important as false
-  const [important, setImportant] = useState<Record<string, boolean>>(() => {
-    const map: Record<string, boolean> = {};
-    words.forEach(w => { map[w.id] = !!w.important; });
-    return map;
-  });
+  // Remove local important state, rely on words prop
 
   async function handleDelete(id: string) {
     try {
@@ -69,8 +66,9 @@ export function WordList({ words }: WordListProps) {
   }
 
   async function handleMarkImportant(wordId: string) {
-    const newValue = !important[wordId];
-    setImportant(prev => ({ ...prev, [wordId]: newValue }));
+    const word = words.find(w => w.id === wordId);
+    if (!word) return;
+    const newValue = !word.important;
     try {
       await fetch(`/api/learn/words/${wordId}/important`, {
         method: "POST",
@@ -78,6 +76,8 @@ export function WordList({ words }: WordListProps) {
         body: JSON.stringify({ important: newValue }),
       });
       toast.success(newValue ? "Marked as important" : "Unmarked as important");
+      // Refetch words so UI updates immediately
+      await queryClient.invalidateQueries({ queryKey: ["words"] });
     } catch {
       toast.error("Failed to update important status");
     }
@@ -206,14 +206,14 @@ export function WordList({ words }: WordListProps) {
                      <Button variant="ghost" size="icon" onClick={() => playTTS(words[viewIndex].germanWord)} disabled={ttsLoading}>
                     <Volume2 className={ttsLoading ? "animate-pulse h-5 w-5" : "h-5 w-5"} />
                   </Button>
-                  <span className="text-2xl font-semibold text-primary">{words[viewIndex].germanWord || <span className="text-muted-foreground">N/A</span>}</span>
+                  <span className="text-2xl font-semibold text-primary">{words[viewIndex]?.germanWord || <span className="text-muted-foreground">N/A</span>}</span>
                
                   <button
                     onClick={() => handleMarkImportant(words[viewIndex].id)}
                     className="ml-1"
-                    title={important[words[viewIndex].id] ? "Unmark as important" : "Mark as important"}
+                    title={words[viewIndex] && words[viewIndex].important ? "Unmark as important" : "Mark as important"}
                   >
-                    {important[words[viewIndex].id] ? (
+                    {words[viewIndex] && words[viewIndex].important ? (
                       <Star className="h-5 w-5 text-yellow-400 fill-yellow-400" />
                     ) : (
                       <Star className="h-5 w-5 text-gray-300" />
@@ -225,23 +225,23 @@ export function WordList({ words }: WordListProps) {
               {/* Translations */}
               <div className="grid grid-cols-2 gap-4">
                 <div className="flex flex-col items-center px-3  py-2  rounded-lg bg-muted/50">
-                  <span className="mt-1 text-lg ">{words[viewIndex].englishTranslation || <span className="text-muted-foreground">N/A</span>}</span>
+                  <span className="mt-1 text-lg ">{words[viewIndex] && words[viewIndex].englishTranslation || <span className="text-muted-foreground">N/A</span>}</span>
                 </div>
                 <div className="flex flex-col items-center px-3 py-2 rounded-lg bg-muted/50">
-                  <span className="mt-1 text-lg ">{words[viewIndex].banglaTranslation || <span className="text-muted-foreground">N/A</span>}</span>
+                  <span className="mt-1 text-lg ">{words[viewIndex] && words[viewIndex].banglaTranslation || <span className="text-muted-foreground">N/A</span>}</span>
                 </div>
               </div>
 
               {/* Example Sentence */}
               <div className="px-3 py-2  rounded-lg">
                 <span className="font-semibold text-primary">Example:</span>
-                <span className="ml-2">{words[viewIndex].exampleSentence || <span className="text-muted-foreground">N/A</span>}</span>
+                <span className="ml-2">{words[viewIndex] && words[viewIndex].exampleSentence || <span className="text-muted-foreground">N/A</span>}</span>
               </div>
 
               {/* Notes */}
               <div className="px-3 py-2  rounded-lg  ">
                 <span className="font-semibold">Notes:</span>
-                <span className="ml-2">{words[viewIndex].notes || <span className="text-muted-foreground">N/A</span>}</span>
+                <span className="ml-2">{ words[viewIndex] && words[viewIndex].notes || <span className="text-muted-foreground">N/A</span>}</span>
               </div>
 
               {/* Navigation arrows at bottom */}

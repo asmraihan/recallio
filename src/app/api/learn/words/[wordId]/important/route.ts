@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { learningProgress } from "@/lib/db/schema";
+import { learningProgress, words } from "@/lib/db/schema";
 import { eq, and } from "drizzle-orm";
 
 export async function POST(req: Request, context: { params: Promise<{ wordId: string }> }) {
@@ -11,27 +11,9 @@ export async function POST(req: Request, context: { params: Promise<{ wordId: st
   const { wordId } = await context.params;
   const { important } = await req.json();
 
-  // Update or insert learningProgress for this word/user
-  const [progress] = await db
-    .select()
-    .from(learningProgress)
-    .where(and(eq(learningProgress.userId, session.user.id), eq(learningProgress.wordId, wordId)));
-  if (progress) {
-    await db.update(learningProgress)
-      .set({ important })
-      .where(eq(learningProgress.id, progress.id));
-  } else {
-    await db.insert(learningProgress).values({
-      userId: session.user.id,
-      wordId,
-      important,
-      masteryLevel: 0,
-      correctAttempts: 0,
-      incorrectAttempts: 0,
-      lastReviewedAt: new Date(),
-      nextReviewDate: new Date(),
-      preferredDirection: "german_to_english",
-    });
-  }
+  // Update important directly on words table
+  await db.update(words)
+    .set({ important })
+    .where(eq(words.id, wordId));
   return NextResponse.json({ success: true });
 }

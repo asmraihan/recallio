@@ -106,7 +106,7 @@ export async function GET(req: NextRequest) {
       createdBy: words.createdBy,
       createdAt: words.createdAt,
       updatedAt: words.updatedAt,
-      important: learningProgress.important,
+      important: words.important,
     };
 
     let whereCondition;
@@ -119,13 +119,6 @@ export async function GET(req: NextRequest) {
     userWords = await db
       .select(selectFields)
       .from(words)
-      .leftJoin(
-        learningProgress,
-        and(
-          eq(words.id, learningProgress.wordId),
-          eq(learningProgress.userId, session.user.id)
-        )
-      )
       .where(whereCondition)
       .orderBy(words.createdAt);
 

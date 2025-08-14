@@ -20,6 +20,7 @@ export const words = pgTable('words', {
   notes: text('notes'),
   section: text('section').notNull(),
   createdBy: uuid('created_by').references(() => users.id),
+  important: boolean('important').notNull().default(false),
   createdAt: timestamp('created_at').defaultNow(),
   updatedAt: timestamp('updated_at').defaultNow(),
 });
@@ -51,7 +52,7 @@ export const learningProgress = pgTable('learning_progress', {
   lastReviewedAt: timestamp('last_reviewed_at'),
   // Learning direction preferences (e.g., "german_to_english", "english_to_german")
   preferredDirection: text('preferred_direction').notNull().default('german_to_english'),
-  important: boolean('important').notNull().default(false),
+  // important: boolean('important').notNull().default(false),
   createdAt: timestamp('created_at').defaultNow(),
   updatedAt: timestamp('updated_at').defaultNow(),
 });

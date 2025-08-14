@@ -1,0 +1,1 @@
+ALTER TABLE "learning_progress" DROP COLUMN "important";

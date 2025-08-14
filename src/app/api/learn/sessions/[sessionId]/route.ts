@@ -39,7 +39,7 @@ export async function GET(
     if (!wordIds.length) {
       return NextResponse.json({ error: "No new words in this section." }, { status: 400 });
     }
-    // Fetch word details and preserve order, join with learning_progress for 'important'
+    // Fetch word details and preserve order, use important from words table
     const wordDetails = await db
       .select({
         id: words.id,
@@ -48,16 +48,9 @@ export async function GET(
         banglaTranslation: words.banglaTranslation,
         notes: words.notes,
         section: words.section,
-        important: learningProgress.important,
+        important: words.important,
       })
       .from(words)
-      .leftJoin(
-        learningProgress,
-        and(
-          eq(learningProgress.wordId, words.id),
-          eq(learningProgress.userId, session.user.id)
-        )
-      )
       .where(and(eq(words.createdBy, session.user.id), eqAny(words.id, wordIds)));
     // Sort words by presentationOrder and merge answer state
     const wordOrderMap = Object.fromEntries(sessionWordRows.map((row) => [row.wordId, row.presentationOrder]));

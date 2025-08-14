@@ -173,36 +173,24 @@ export async function POST(req: Request) {
 
       case "important": {
         // Get all words marked as important for this user
-        const importantWordIds = await db
-          .select({ wordId: learningProgress.wordId })
-          .from(learningProgress)
+        let query = db
+          .select({
+            id: words.id,
+            germanWord: words.germanWord,
+            englishTranslation: words.englishTranslation,
+            banglaTranslation: words.banglaTranslation,
+            section: words.section,
+          })
+          .from(words)
           .where(
             and(
-              eq(learningProgress.userId, session.user.id),
-              eq(learningProgress.important, true)
+              eq(words.createdBy, session.user.id),
+              eq(words.important, true),
+              sectionFilter(words.section)
             )
-          );
-        const ids = importantWordIds.map((w) => w.wordId);
-        if (ids.length > 0) {
-          let query = db
-            .select({
-              id: words.id,
-              germanWord: words.germanWord,
-              englishTranslation: words.englishTranslation,
-              banglaTranslation: words.banglaTranslation,
-              section: words.section,
-            })
-            .from(words)
-            .where(
-              and(
-                eq(words.createdBy, session.user.id),
-                inArray(words.id, ids),
-                sectionFilter(words.section)
-              )
-            )
-            .orderBy(sql`RANDOM()`);
-          wordsToLearn = customLimit ? await query.limit(customLimit) : await query;
-        }
+          )
+          .orderBy(sql`RANDOM()`);
+        wordsToLearn = customLimit ? await query.limit(customLimit) : await query;
         break;
       }
 
