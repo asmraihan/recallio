@@ -50,35 +50,35 @@ async function execute() {
     //     END;`
     // );
     /* ==================== */
-    console.log("Starting important status migration...");
+    // console.log("Starting important status migration...");
 
-    // 1. Count important in learning_progress
-    const importantProgress = await db
-      .select({ wordId: schema.learningProgress.wordId })
-      .from(schema.learningProgress)
-      .where(eq(schema.learningProgress.important, true));
+    // // 1. Count important in learning_progress
+    // const importantProgress = await db
+    //   .select({ wordId: schema.learningProgress.wordId })
+    //   .from(schema.learningProgress)
+    //   .where(eq(schema.learningProgress.important, true));
 
-    const importantWordIds = Array.from(new Set(importantProgress.map(row => row.wordId)));
-    console.log(`Found ${importantWordIds.length} unique important words in learning_progress.`);
+    // const importantWordIds = Array.from(new Set(importantProgress.map(row => row.wordId)));
+    // console.log(`Found ${importantWordIds.length} unique important words in learning_progress.`);
 
-    // 2. Update words table
-    if (importantWordIds.length > 0) {
-      await Promise.all(
-        importantWordIds.map(wordId =>
-          db.update(schema.words)
-            .set({ important: true })
-            .where(eq(schema.words.id, wordId))
-        )
-      );
-    }
+    // // 2. Update words table
+    // if (importantWordIds.length > 0) {
+    //   await Promise.all(
+    //     importantWordIds.map(wordId =>
+    //       db.update(schema.words)
+    //         .set({ important: true })
+    //         .where(eq(schema.words.id, wordId))
+    //     )
+    //   );
+    // }
 
-    // 3. Count important in words table
-    const wordsImportant = await db
-      .select({ id: schema.words.id })
-      .from(schema.words)
-      .where(eq(schema.words.important, true));
+    // // 3. Count important in words table
+    // const wordsImportant = await db
+    //   .select({ id: schema.words.id })
+    //   .from(schema.words)
+    //   .where(eq(schema.words.important, true));
 
-    console.log(`Now ${wordsImportant.length} words are marked important in words table.`);
+    // console.log(`Now ${wordsImportant.length} words are marked important in words table.`);
 
     process.exit(0);
   } catch (error) {
