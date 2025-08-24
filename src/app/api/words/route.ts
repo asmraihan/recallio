@@ -120,12 +120,14 @@ export async function GET(req: NextRequest) {
       .select(selectFields)
       .from(words)
       .where(whereCondition)
-      .orderBy(words.createdAt);
+      .orderBy(words.createdAt, words.id);
+
+      // console.log(userWords)
 
     if (filterParam === "important") {
       userWords = userWords.filter((w) => w.important === true);
     }
-    
+
     return NextResponse.json(userWords);
   } catch (error) {
     console.error("[WORDS_GET]", error);

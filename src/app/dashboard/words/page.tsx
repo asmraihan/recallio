@@ -3,13 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { SingleSelect } from "@/components/ui/single-select";
 import { WordList } from "@/components/words/word-list";
 import { Loader2, Upload } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
@@ -187,36 +181,29 @@ export default function WordsPage() {
               </span>
             )}
           </div>
-          <Select
+          <SingleSelect
             value={section ?? undefined}
             onValueChange={(value) => updateFilters("section", value)}
-          >
-            <SelectTrigger className="w-[180px]">
-              <SelectValue placeholder="Filter by section" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Sections</SelectItem>
-              {sections.map((sectionValue) => (
-                <SelectItem key={sectionValue} value={sectionValue}>
-                  Section {sectionValue}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+            options={[
+              { value: "all", label: "All Sections" },
+              ...sections.map((sectionValue) => ({
+                value: sectionValue,
+                label: `Section ${sectionValue}`
+              }))
+            ]}
+            className="w-[180px]"
+          />
         </div>
         <div className="flex items-center gap-2">
-          <Select
+          <SingleSelect
             value={searchParams.get("filter") || "default"}
             onValueChange={(value) => updateFilters("filter", value)}
-          >
-            <SelectTrigger className="w-[180px]">
-              <SelectValue placeholder="Filter by" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="default">Default</SelectItem>
-              <SelectItem value="important">Important</SelectItem>
-            </SelectContent>
-          </Select>
+            options={[
+              { value: "default", label: "Default" },
+              { value: "important", label: "Important" }
+            ]}
+            className="w-[180px]"
+          />
         </div>
       </div>
 

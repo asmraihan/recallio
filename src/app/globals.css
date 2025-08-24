@@ -3,6 +3,43 @@
 
 @custom-variant dark (&:is(.dark *));
 
+/* scroll bar */
+
+
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+  background-color: transparent;
+}
+
+::-webkit-scrollbar-track {
+  background-color: var(--muted);
+  border-radius: var(--radius-sm);
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: var(--muted-foreground);
+  border-radius: var(--radius-sm);
+  transition: background-color 0.2s ease-in-out;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: var(--foreground);
+}
+
+.dark ::-webkit-scrollbar-track {
+  background-color: var(--secondary);
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  background-color: var(--muted-foreground);
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+  background-color: var(--foreground);
+} 
+
+
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
