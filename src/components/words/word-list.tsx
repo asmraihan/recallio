@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Table,
   TableBody,
@@ -10,7 +10,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { Pencil, Trash2, Star, Volume2, ChevronLeft, ChevronRight, Eye } from "lucide-react";
+import { Pencil, Trash2, Star, Volume2, ChevronLeft, ChevronRight, Eye, Play, Pause } from "lucide-react";
 import { toast } from "sonner";
 import { useQueryClient } from "@tanstack/react-query";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -41,6 +41,7 @@ export function WordList({ words }: WordListProps) {
   const [viewIndex, setViewIndex] = useState<number | null>(null);
   const [ttsLoading, setTtsLoading] = useState(false);
   const [ttsAudio, setTtsAudio] = useState<HTMLAudioElement | null>(null);
+  const [isAutoplayOn, setIsAutoplayOn] = useState(false);
   // Remove local important state, rely on words prop
 
   async function handleDelete(id: string) {
@@ -151,9 +152,28 @@ export function WordList({ words }: WordListProps) {
   }
 
 
-  const handleViewClose = () => setViewIndex(null);
+  const handleViewClose = () => {
+    setViewIndex(null);
+    setIsAutoplayOn(false);
+  };
   const handlePrev = () => setViewIndex(i => (i !== null && i > 0 ? i - 1 : i));
   const handleNext = () => setViewIndex(i => (i !== null && i < words.length - 1 ? i + 1 : i));
+
+  // Autoplay functionality
+  useEffect(() => {
+    let timer: NodeJS.Timeout;
+    if (isAutoplayOn && viewIndex !== null && viewIndex < words.length - 1) {
+      // Play TTS for current word when autoplay is on
+      // playTTS(words[viewIndex].germanWord);
+      
+      timer = setTimeout(() => {
+        handleNext();
+      }, 10000); // 10 seconds delay
+    }
+    return () => {
+      if (timer) clearTimeout(timer);
+    };
+  }, [isAutoplayOn, viewIndex]);
 
   return (
     <div className="rounded-md border overflow-x-auto">
@@ -288,25 +308,43 @@ export function WordList({ words }: WordListProps) {
               </div>
 
               {/* Navigation arrows at bottom */}
-              <div className="flex gap-2 mt-2">
-                <Button
-                  variant="outline"
-                  size="lg"
-                  className="flex-1"
-                  onClick={handlePrev}
-                  disabled={viewIndex === 0}
-                >
-                  <ChevronLeft className="h-5 w-5 mr-2" /> Previous
-                </Button>
-                <Button
-                  variant="outline"
-                  size="lg"
-                  className="flex-1"
-                  onClick={handleNext}
-                  disabled={viewIndex === words.length - 1}
-                >
-                  Next <ChevronRight className="h-5 w-5 ml-2" />
-                </Button>
+              <div className="flex flex-col gap-2 mt-2">
+                {/* Autoplay controls */}
+                
+
+                {/* Navigation controls */}
+                <div className="flex gap-2">
+                  <Button
+                    variant="outline"
+                    size="lg"
+                    className="flex-1"
+                    onClick={handlePrev}
+                    disabled={viewIndex === 0}
+                  >
+                    <ChevronLeft className="h-5 w-5 mr-2" /> Previous
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="lg"
+                    className="flex-1"
+                    onClick={handleNext}
+                    disabled={viewIndex === words.length - 1}
+                  >
+                    Next <ChevronRight className="h-5 w-5 ml-2" />
+                  </Button>
+                    <Button
+                    variant="outline"
+                    size="lg"
+                    onClick={() => setIsAutoplayOn(!isAutoplayOn)}
+                    className=""
+                  >
+                    {isAutoplayOn ? (
+                      <><Pause className="h-5 w-5" /> </>
+                    ) : (
+                      <><Play className="h-5 w-5" /> </>
+                    )}
+                  </Button>
+                </div>
               </div>
             </div>
           )}
