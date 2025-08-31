@@ -25,7 +25,7 @@ import { Copy } from "lucide-react";
 
 // Define the form schema
 const formSchema = z.object({
-  pattern: z.enum(["german-bangla", "german-english", "german-bangla-english"]),
+  pattern: z.literal("german-bangla-english"),  // Only one pattern now
   words: z.string().min(1, "Please enter some words"),
   section: z.string().min(1, "Section is required"),
 });
@@ -34,23 +34,16 @@ type FormValues = z.infer<typeof formSchema>;
 
 interface ParsedWord {
   germanWord: string;
-  banglaTranslation: string | null;
-  englishTranslation: string | null;
+  banglaTranslation: string;
+  englishTranslation: string;
+  exampleSentence: string | null;
   section: string;
 }
 
 const patternInstructions = {
-  "german-bangla": {
-    example: "Haus-বাড়ি",
-    description: "German word followed by Bangla translation",
-  },
-  "german-english": {
-    example: "Haus-house",
-    description: "German word followed by English translation",
-  },
   "german-bangla-english": {
-    example: "Haus-বাড়ি-house",
-    description: "German word followed by Bangla and English translations",
+    example: "das Haus-বাড়ি-house-Das Haus ist groß",
+    description: "German word with article, followed by Bangla translation, English translation, and optional example sentence",
   },
 };
 
@@ -72,7 +65,7 @@ export function BatchAddForm() {
     },
   });
 
-  const pattern = form.watch("pattern");
+  const pattern = "german-bangla-english"; // Fixed pattern
 
   const parseWords = (text: string, currentPattern: FormValues["pattern"]) => {
     setParseError(null);
@@ -90,33 +83,31 @@ export function BatchAddForm() {
       // Only accept format: word-word with no spaces
       const parts = line.split("-");
 
-      const expectedParts = currentPattern === "german-bangla-english" ? 3 : 2;
-
-      if (parts.length !== expectedParts) {
+        if (parts.length < 3 || parts.length > 4) {
         errors.push(
           `Line ${index + 1}: Invalid format.\n` +
-          `Expected: "${patternInstructions[currentPattern].example}"\n` +
+          `Expected: "${patternInstructions["german-bangla-english"].example}"\n` +
           `Got: "${line}"`
         );
         return;
       }
 
-      // Validate that we have non-empty parts
-      if (parts.some(part => !part.trim())) {
+      // Validate that required parts are non-empty
+      if (!parts[0].trim() || !parts[1].trim() || !parts[2].trim()) {
         errors.push(
-          `Line ${index + 1}: All parts must be non-empty.\n` +
+          `Line ${index + 1}: German word, Bangla translation, and English translation are required.\n` +
           `Got: "${line}"`
         );
         return;
       }
 
-      const [german, second, third] = parts;
+      const [german, bangla, english, example = null] = parts;
 
       words.push({
         germanWord: german.trim(),
-        banglaTranslation: currentPattern === "german-english" ? null : second.trim(),
-        englishTranslation: currentPattern === "german-bangla" ? null :
-          currentPattern === "german-english" ? second.trim() : third.trim(),
+        banglaTranslation: bangla.trim(),
+        englishTranslation: english.trim(),
+        exampleSentence: example ? example.trim() : null,
         section: form.getValues("section"),
       });
     });
@@ -139,10 +130,19 @@ export function BatchAddForm() {
 
     try {
       setIsAdding(true);
+      // Prepare words with all fields including example sentence
+      const wordsToSubmit = parsedWords.map((word, index) => ({
+        germanWord: word.germanWord,
+        banglaTranslation: word.banglaTranslation,
+        englishTranslation: word.englishTranslation,
+        exampleSentence: word.exampleSentence,
+        section: word.section
+      }));
+
       const response = await fetch("/api/words/batch", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ words: parsedWords }),
+        body: JSON.stringify({ words: wordsToSubmit }),
       });
 
       const data = await response.json();
@@ -153,7 +153,7 @@ export function BatchAddForm() {
 
       toast.success(data.message || `Added ${parsedWords.length} words to section ${data.section}`);
       form.reset({
-        pattern: "german-bangla-english",
+        pattern: "german-bangla-english", // Keep the fixed pattern
         words: "",
         section: "",
       });
@@ -195,53 +195,20 @@ export function BatchAddForm() {
       </CardHeader>
       <CardContent>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-          <div className="grid gap-4 md:grid-cols-2">
-            <div className="space-y-2">
-              <Label htmlFor="pattern">Input Pattern</Label>
-              <Select
-                value={pattern}
-                onValueChange={(value) => {
-                  form.setValue("pattern", value as FormValues["pattern"]);
-                  if (form.getValues("words")) {
-                    parseWords(form.getValues("words"), value as FormValues["pattern"]);
-                  }
-                }}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select pattern" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="german-bangla">German - Bangla</SelectItem>
-                  <SelectItem value="german-english">German - English</SelectItem>
-                  <SelectItem value="german-bangla-english">German - Bangla - English</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="section">Section Number</Label>
-              <Input
-                id="section"
-                type="text"
-                value={section}
-                onChange={handleSectionChange}
-              />
-            </div>
-          </div>
-
           <Alert>
             <Info className="h-4 w-4" />
             <AlertDescription className="relative">
-              {patternInstructions[pattern].description}
+              Enter words with their translations in the following format:
               <br />
-              <br />
-              Example: {patternInstructions[pattern].example}
-              <br />
-              <br />
+                  <br />
+              <code className="text-sm">German word with article-Bangla translation-English translation-Example sentence</code>
+              <br /><br />
+              Example: {patternInstructions["german-bangla-english"].example}
+              <br /><br />
               Prompt: {" "}
               <span>"</span>
               <span ref={promptRef} className="">
-              Give me translation list of German words followed by Bangla and English translations in this exact format: German-বাংলা-English. Use only two hyphens per line — one between German and Bangla, and one between Bangla and English. Never use extra hyphens, dashes, or slashes inside any translation. Use simple, clean Bangla and English words. Example: Haus-বাড়ি-house.If a word refers to multiple meanings (like 'Eltern'), choose one clear equivalent. For nouns, always include the definite article (der, die, or das) with the word.
+              Give me translation list of German words followed by Bangla and English translations in this exact format: German-বাংলা-English-Example Sentence. Use only two hyphens per line - (if there is example sentence matching in given text then three) one between German and Bangla, one between Bangla and English and last one between English and example sentence if there is any . Never use extra hyphens, dashes, or slashes inside any translation. Use simple, clean Bangla and English words. Example: Haus-বাড়ি-house-Das Haus ist groß. If a word refers to multiple meanings (like 'Eltern'), choose one clear equivalent. For nouns, always include the definite article (der, die, or das) with the word.
               </span>
               <span>"</span>
               <button
@@ -288,21 +255,23 @@ export function BatchAddForm() {
               </CardHeader>
               <CardContent>
                 <div className="rounded-md border">
-                  <div className="grid grid-cols-4 gap-4 p-4 font-medium border-b">
+                  <div className="grid grid-cols-5 gap-4 p-4 font-medium border-b">
                     <div>German</div>
                     <div>Bangla</div>
                     <div>English</div>
+                    <div>Example</div>
                     <div>Section</div>
                   </div>
                   <div className="max-h-[300px] overflow-y-auto">
                     {parsedWords.map((word, index) => (
                       <div
                         key={index}
-                        className="grid grid-cols-4 gap-4 p-4 border-b last:border-0"
+                        className="grid grid-cols-5 gap-4 p-4 border-b last:border-0"
                       >
                         <div>{word.germanWord}</div>
-                        <div>{word.banglaTranslation || "-"}</div>
-                        <div>{word.englishTranslation || "-"}</div>
+                        <div>{word.banglaTranslation}</div>
+                        <div>{word.englishTranslation}</div>
+                        <div>{word.exampleSentence || "-"}</div>
                         <div>{word.section}</div>
                       </div>
                     ))}
@@ -312,9 +281,21 @@ export function BatchAddForm() {
             </Card>
           )}
 
-          <Button type="submit" disabled={isAdding || parsedWords.length === 0}>
-            {isAdding ? "Adding..." : `Add ${parsedWords.length} Words`}
-          </Button>
+          <div className="flex items-center gap-4">
+            <div className="w-32">
+              <Label htmlFor="section" className="sr-only">Section Number</Label>
+              <Input
+                id="section"
+                type="text"
+                value={section}
+                onChange={handleSectionChange}
+                placeholder="Section #"
+              />
+            </div>
+            <Button type="submit" disabled={isAdding || parsedWords.length === 0 || !section}>
+              {isAdding ? "Adding..." : `Add ${parsedWords.length} Words`}
+            </Button>
+          </div>
         </form>
       </CardContent>
     </Card>

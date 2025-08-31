@@ -148,20 +148,50 @@ export function WordList({ words }: WordListProps) {
             <TableHead>Section</TableHead>
             {/* <TableHead>Example</TableHead>
             <TableHead>Notes</TableHead> */}
-            <TableHead>Created</TableHead>
+            <TableHead>Sentence</TableHead>
             <TableHead className="text-right">Actions</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {words.map((word, idx) => (
             <TableRow key={word.id}>
-              <TableCell className="font-medium">{word.germanWord}</TableCell>
+              <TableCell className="font-medium">
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-6 w-6"
+                    onClick={() => playTTS(word.germanWord)}
+                    disabled={ttsLoading}
+                  >
+                    <Volume2 className="h-3 w-3" />
+                  </Button>
+                  {word.germanWord}
+                </div>
+              </TableCell>
               <TableCell>{word.englishTranslation || <span className="text-muted-foreground">N/A</span>}</TableCell>
               <TableCell>{word.banglaTranslation || <span className="text-muted-foreground">N/A</span>}</TableCell>
               <TableCell>{word.section}</TableCell>
               {/* <TableCell>{word.exampleSentence || <span className="text-muted-foreground">N/A</span>}</TableCell>
               <TableCell>{word.notes || <span className="text-muted-foreground">N/A</span>}</TableCell> */}
-              <TableCell>{word.createdAt.toLocaleDateString()}</TableCell>
+              <TableCell>
+                {word.exampleSentence ? (
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-6 w-6"
+                      onClick={() => playTTS(word.exampleSentence!)}
+                      disabled={ttsLoading}
+                    >
+                      <Volume2 className="h-3 w-3" />
+                    </Button>
+                    {word.exampleSentence}
+                  </div>
+                ) : (
+                  <span className="text-muted-foreground">N/A</span>
+                )}
+              </TableCell>
               <TableCell className="text-right">
                 <div className="flex justify-end gap-2">
                   <Button
@@ -258,15 +288,28 @@ export function WordList({ words }: WordListProps) {
               </div>
 
               {/* Example Sentence */}
-              <div className="px-3 py-2  rounded-lg">
-                <span className="font-semibold text-primary">Example:</span>
-                <span className="ml-2">{words[viewIndex] && words[viewIndex].exampleSentence || <span className="text-muted-foreground">N/A</span>}</span>
+              <div className="px-3 py-2 rounded-lg">
+                {words[viewIndex] && words[viewIndex].exampleSentence ? (
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-7 w-7"
+                      onClick={() => playTTS(words[viewIndex].exampleSentence!)}
+                      disabled={ttsLoading}
+                    >
+                      <Volume2 className="h-4 w-4" />
+                    </Button>
+                    <span className="italic">{words[viewIndex].exampleSentence}</span>
+                  </div>
+                ) : (
+                  <span className="text-muted-foreground">Sentence: N/A</span>
+                )}
               </div>
 
               {/* Notes */}
               <div className="px-3 py-2  rounded-lg  ">
-                <span className="font-semibold">Notes:</span>
-                <span className="ml-2">{ words[viewIndex] && words[viewIndex].notes || <span className="text-muted-foreground">N/A</span>}</span>
+                <span className="ml-2">{ words[viewIndex] && words[viewIndex].notes || <span className="text-muted-foreground">Notes: N/A</span>}</span>
               </div>
 
               {/* Navigation arrows at bottom */}

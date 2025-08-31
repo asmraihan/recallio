@@ -12,7 +12,10 @@ const batchWordSchema = z.object({
       germanWord: z.string().min(1, "German word is required"),
       englishTranslation: z.string().nullable(),
       banglaTranslation: z.string().nullable(),
-  section: z.string().min(1, "Section is required"),
+      exampleSentence: z.string().nullable(),
+      section: z.string().min(1, "Section is required"),
+      createdAt: z.date().optional(),
+      updatedAt: z.date().optional(),
     })
   ).min(1, "At least one word is required").max(100, "Maximum 100 words allowed"),
 });
@@ -65,14 +68,22 @@ export async function POST(req: Request) {
     }
 
     try {
+      // Sort filtered words to maintain order
+      const now = new Date();
       const inserted = await db.insert(words).values(
-        filteredWords.map((word) => ({
+        filteredWords.map((word, index) => ({
           ...word,
           createdBy: session.user.id,
-          createdAt: new Date(),
-          updatedAt: new Date(),
+          // Add an incremental delay to maintain order (100ms intervals)
+          createdAt: new Date(now.getTime() + (index * 100)),
+          updatedAt: new Date(now.getTime() + (index * 100)),
         }))
-      ).returning();
+      )
+      .returning({
+        id: words.id,
+        germanWord: words.germanWord,
+        createdAt: words.createdAt
+      });
 
       // console.log(`Successfully inserted ${inserted.length} words`);
       
