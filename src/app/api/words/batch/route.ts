@@ -29,7 +29,7 @@ export async function POST(req: Request) {
     }
 
     const body = await req.json();
-    console.log("Received request body:", JSON.stringify(body, null, 2));
+    // console.log("Received request body:", JSON.stringify(body, null, 2));
 
     const result = batchWordSchema.safeParse(body);
     if (!result.success) {
@@ -45,7 +45,7 @@ export async function POST(req: Request) {
     }
 
     const { words: wordsToAdd } = result.data;
-    console.log(`Attempting to add ${wordsToAdd.length} words for user ${session.user.id}`);
+    // console.log(`Attempting to add ${wordsToAdd.length} words for user ${session.user.id}`);
 
     // Get all existing words for this user (regardless of section)
     const existing = await db.select({
@@ -74,7 +74,7 @@ export async function POST(req: Request) {
         }))
       ).returning();
 
-      console.log(`Successfully inserted ${inserted.length} words`);
+      // console.log(`Successfully inserted ${inserted.length} words`);
       
       return NextResponse.json({
         message: `Added ${inserted.length} new words. Skipped ${skippedCount} duplicate(s).`,

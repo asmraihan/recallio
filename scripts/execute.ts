@@ -20,7 +20,7 @@ if (!databaseUrl) {
   process.exit(1);
 }
 
-console.log("Found database URL, connecting...");
+// console.log("Found database URL, connecting...");
 const neonClient = neon(databaseUrl);
 const db = drizzle(neonClient, { schema });
 

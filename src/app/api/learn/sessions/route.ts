@@ -50,7 +50,7 @@ export async function POST(req: Request) {
     switch (type) {
       case "review": {
         // Get words that are due for review
-        console.log("[SESSION REVIEW] Fetching due words for review session");
+        // console.log("[SESSION REVIEW] Fetching due words for review session");
         const dueWords = await db
           .select({
             wordId: learningProgress.wordId,
@@ -65,7 +65,7 @@ export async function POST(req: Request) {
           );
         const dueWordIds = dueWords.map((w) => w.wordId);
         // Debug log
-        console.log("[SESSION REVIEW] dueWordIds:", dueWordIds, "sections:", sections);
+        // console.log("[SESSION REVIEW] dueWordIds:", dueWordIds, "sections:", sections);
         if (dueWordIds.length > 0) {
           let query = db
             .select({

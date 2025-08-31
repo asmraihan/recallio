@@ -70,73 +70,35 @@ export default function LearningSessionPage() {
     } catch {}
   };
 
-  // Play TTS audio
-  // const playTTS = async (text: string) => {
-  //   setTtsLoading(true);
-  //   try {
-  //     const res = await fetch("/api/tts", {
-  //       method: "POST",
-  //       headers: { "Content-Type": "application/json" },
-  //       body: JSON.stringify({ text, voice: ttsVoice }),
-  //     });
-  //     if (!res.ok) throw new Error("TTS failed");
-  //     const blob = await res.blob();
-  //     const url = URL.createObjectURL(blob);
-  //     const audio = new Audio(url);
-  //     setTtsAudio(audio);
-  //     audio.play();
-  //     audio.onended = () => {
-  //       URL.revokeObjectURL(url);
-  //       setTtsAudio(null);
-  //     };
-  //   } catch {
-  //     toast.error("TTS playback failed");
-  //   } finally {
-  //     setTtsLoading(false);
-  //   }
-  // };
-
-    // fallback to Web Speech API for TTS
-    function playTTS(text: string) {
+  async function playTTS(text: string) {
     setTtsLoading(true);
     try {
-      const utterance = new SpeechSynthesisUtterance(text);
-      const voices = window.speechSynthesis.getVoices();
-      const germanVoice = voices.find(voice => 
-        voice.name.toLowerCase().includes('anna') 
-      );
+      const response = await fetch('/api/tts', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text }),
+      });
 
-      if (germanVoice) {
-        utterance.voice = germanVoice;
+      if (!response.ok) {
+        throw new Error('TTS request failed');
       }
 
-      // properties
-      utterance.rate = 0.9; 
-      utterance.pitch = 1;
-      utterance.volume = 1;
-
-      utterance.onend = () => {
-        setTtsLoading(false);
-        setTtsAudio(null);
-      };
-
-      utterance.onerror = () => {
-        setTtsLoading(false);
-        setTtsAudio(null);
-        toast.error("TTS playback failed");
-      };
-
-      window.speechSynthesis.cancel();
-      window.speechSynthesis.speak(utterance);
-      setTtsAudio(utterance as any);
+      const data = await response.json();
       
-    } catch (error) {
-      console.error("TTS Error:", error);
+      if (ttsAudio) {
+        ttsAudio.pause();
+        ttsAudio.src = '';
+      }
+
+      const audio = new Audio(`data:audio/mp3;base64,${data.audio}`);
+      setTtsAudio(audio);
+      await audio.play();
+    } catch {
       toast.error("TTS playback failed");
+    } finally {
       setTtsLoading(false);
     }
   }
-
 
   useEffect(() => {
     async function fetchSession() {
@@ -149,7 +111,7 @@ export default function LearningSessionPage() {
         }
         const data = await res.json();
         const fetchedWords = data.words || [];
-        console.log(fetchedWords , "fetchedWords");
+        // console.log(fetchedWords , "fetchedWords");
         setDirection(data.session?.direction || "german_to_english");
         setSessionType(data.session?.sessionType || "");
         setSections(data.session?.sections || []);

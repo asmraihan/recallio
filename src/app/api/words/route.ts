@@ -91,7 +91,7 @@ export async function GET(req: NextRequest) {
     let userWords;
 
     if (!sectionParam || sectionParam === "") {
-      console.log("First condition met, returning empty array");
+      // console.log("First condition met, returning empty array");
       return NextResponse.json([]);
     }
 

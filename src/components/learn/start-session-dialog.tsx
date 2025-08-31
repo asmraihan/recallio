@@ -59,7 +59,7 @@ export function StartSessionDialog({ children, mode = "new" }: StartSessionDialo
       return data.sections;
     },
   });
-  console.log("Available sections:", sectionsData);
+  // console.log("Available sections:", sectionsData);
   const handleStartSession = async () => {
     if (section.length === 0) {
       setSectionError("Please select at least one section.");

@@ -1,37 +1,27 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { synthesize, getVoices } from '@echristian/edge-tts';
+import { EdgeTTS } from '@lixen/edge-tts';
 
-export async function POST(req: NextRequest) {
+export async function POST(request: Request) {
   try {
-    const { text, voice } = await req.json();
-    if (!text || typeof text !== 'string') {
-      return NextResponse.json({ error: 'Missing or invalid text' }, { status: 400 });
+    const { text } = await request.json();
+
+    if (!text) {
+      return NextResponse.json({ error: 'Text is required' }, { status: 400 });
     }
-    const selectedVoice = voice || 'de-DE-AmalaNeural'; // Default to a German voice if none provided
-    const { audio } = await synthesize({ text, voice: selectedVoice, outputFormat: 'audio-24khz-48kbitrate-mono-mp3' });
-    // audio is a Blob
-    const arrayBuffer = await audio.arrayBuffer();
-    return new NextResponse(Buffer.from(arrayBuffer), {
-      status: 200,
-      headers: {
-        'Content-Type': 'audio/mpeg',
-        'Content-Disposition': 'inline; filename="tts.mp3"',
-        'Cache-Control': 'public, max-age=31536000, immutable',
-      },
-    });
-  } catch (err) {
-    return NextResponse.json({ error: 'TTS synthesis failed', details: String(err) }, { status: 500 });
-  }
-}
+    const tts = new EdgeTTS();
+    // const voices = await tts.getVoices();
+    // console.log(voices.filter(v => v.Locale === 'de-DE'));
 
-export async function GET() {
-  // Return available voices (for voice picker)
-  try {
-    const voices = await getVoices();
-    // Only return German voices for now
-    const deVoices = voices.filter((v: any) => v.Locale.startsWith('de-'));
-    return NextResponse.json(deVoices);
-  } catch (err) {
-    return NextResponse.json({ error: 'Failed to fetch voices', details: String(err) }, { status: 500 });
+    await tts.synthesize(text, 'de-DE-AmalaNeural', {
+      rate: '-20%',    // Slower speed for better comprehension
+      volume: '20%',  // Louder for clarity
+      pitch: '-10Hz'   // Slightly higher pitch for clearer pronunciation
+    });
+
+    const base64Audio = tts.toBase64();
+    return NextResponse.json({ audio: base64Audio });
+  } catch (error) {
+    console.error('TTS error:', error);
+    return NextResponse.json({ error: 'Failed to generate speech' }, { status: 500 });
   }
 }
