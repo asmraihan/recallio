@@ -44,8 +44,8 @@ export async function GET(
       .select({
         id: words.id,
         germanWord: words.germanWord,
-        englishTranslation: words.englishTranslation,
-        banglaTranslation: words.banglaTranslation,
+        translationOne: words.translationOne,
+        translationTwo: words.translationTwo,
         notes: words.notes,
         section: words.section,
         important: words.important,

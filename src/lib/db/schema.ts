@@ -14,8 +14,8 @@ export const users = pgTable('users', {
 export const words = pgTable('words', {
   id: uuid('id').defaultRandom().primaryKey(),
   germanWord: text('german_word').notNull(),
-  englishTranslation: text('english_translation'),
-  banglaTranslation: text('bangla_translation'),
+  translationOne: text('translation_one'),
+  translationTwo: text('translation_two'),
   exampleSentence: text('example_sentence'),
   notes: text('notes'),
   section: text('section').notNull(),

@@ -8,8 +8,8 @@ import { eq, and, sql, desc, inArray, notInArray } from "drizzle-orm";
 interface Word {
   id: string;
   germanWord: string;
-  englishTranslation: string | null;
-  banglaTranslation: string | null;
+  translationOne: string | null;
+  translationTwo: string | null;
   section: string;
 }
 
@@ -71,8 +71,8 @@ export async function POST(req: Request) {
             .select({
               id: words.id,
               germanWord: words.germanWord,
-              englishTranslation: words.englishTranslation,
-              banglaTranslation: words.banglaTranslation,
+              translationOne: words.translationOne,
+              translationTwo: words.translationTwo,
               section: words.section,
             })
             .from(words)
@@ -101,8 +101,8 @@ export async function POST(req: Request) {
           .select({
             id: words.id,
             germanWord: words.germanWord,
-            englishTranslation: words.englishTranslation,
-            banglaTranslation: words.banglaTranslation,
+            translationOne: words.translationOne,
+            translationTwo: words.translationTwo,
             section: words.section,
           })
           .from(words)
@@ -153,8 +153,8 @@ export async function POST(req: Request) {
             .select({
               id: words.id,
               germanWord: words.germanWord,
-              englishTranslation: words.englishTranslation,
-              banglaTranslation: words.banglaTranslation,
+              translationOne: words.translationOne,
+              translationTwo: words.translationTwo,
               section: words.section,
             })
             .from(words)
@@ -177,8 +177,8 @@ export async function POST(req: Request) {
           .select({
             id: words.id,
             germanWord: words.germanWord,
-            englishTranslation: words.englishTranslation,
-            banglaTranslation: words.banglaTranslation,
+            translationOne: words.translationOne,
+            translationTwo: words.translationTwo,
             section: words.section,
           })
           .from(words)
@@ -199,8 +199,8 @@ export async function POST(req: Request) {
           .select({
             id: words.id,
             germanWord: words.germanWord,
-            englishTranslation: words.englishTranslation,
-            banglaTranslation: words.banglaTranslation,
+            translationOne: words.translationOne,
+            translationTwo: words.translationTwo,
             section: words.section,
           })
           .from(words)
@@ -220,8 +220,8 @@ export async function POST(req: Request) {
           .select({
             id: words.id,
             germanWord: words.germanWord,
-            englishTranslation: words.englishTranslation,
-            banglaTranslation: words.banglaTranslation,
+            translationOne: words.translationOne,
+            translationTwo: words.translationTwo,
             section: words.section,
           })
           .from(words)

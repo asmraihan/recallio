@@ -15,8 +15,8 @@ import { useDebounce } from "@/hooks/use-debounce";
 interface Word {
   id: string;
   germanWord: string;
-  englishTranslation: string | null;
-  banglaTranslation: string | null;
+  translationOne: string | null;
+  translationTwo: string | null;
   exampleSentence: string | null;
   notes: string | null;
   section: string;
@@ -28,8 +28,8 @@ interface Word {
 interface WordResponse {
   id: string;
   germanWord: string;
-  englishTranslation: string | null;
-  banglaTranslation: string | null;
+  translationOne: string | null;
+  translationTwo: string | null;
   exampleSentence: string | null;
   notes: string | null;
   section: string;
@@ -124,8 +124,8 @@ export default function WordsPage() {
     if (!debouncedSearch) return true;
     const matchesSearch =
       word.germanWord.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
-      (word.englishTranslation?.toLowerCase().includes(debouncedSearch.toLowerCase()) ?? false) ||
-      (word.banglaTranslation?.toLowerCase().includes(debouncedSearch.toLowerCase()) ?? false);
+      (word.translationOne?.toLowerCase().includes(debouncedSearch.toLowerCase()) ?? false) ||
+      (word.translationTwo?.toLowerCase().includes(debouncedSearch.toLowerCase()) ?? false);
     return matchesSearch;
   });
 

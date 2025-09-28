@@ -57,6 +57,13 @@
       "when": 1755184138634,
       "tag": "0007_brave_zuras",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1759083526160,
+      "tag": "0008_milky_lyja",
+      "breakpoints": true
     }
   ]
 }

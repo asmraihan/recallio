@@ -19,8 +19,8 @@ import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "
 interface Word {
   id: string;
   germanWord: string;
-  englishTranslation: string | null;
-  banglaTranslation: string | null;
+  translationOne: string | null;
+  translationTwo: string | null;
   exampleSentence: string | null;
   notes: string | null;
   section: string;
@@ -169,8 +169,8 @@ export function WordList({ words }: WordListProps) {
                   {word.germanWord}
                 </div>
               </TableCell>
-              <TableCell>{word.englishTranslation || <span className="text-muted-foreground">N/A</span>}</TableCell>
-              <TableCell>{word.banglaTranslation || <span className="text-muted-foreground">N/A</span>}</TableCell>
+              <TableCell>{word.translationOne || <span className="text-muted-foreground">N/A</span>}</TableCell>
+              <TableCell>{word.translationTwo || <span className="text-muted-foreground">N/A</span>}</TableCell>
               <TableCell>{word.section}</TableCell>
               {/* <TableCell>{word.exampleSentence || <span className="text-muted-foreground">N/A</span>}</TableCell>
               <TableCell>{word.notes || <span className="text-muted-foreground">N/A</span>}</TableCell> */}
@@ -280,10 +280,10 @@ export function WordList({ words }: WordListProps) {
               {/* Translations */}
               <div className="grid grid-cols-2 gap-4">
                 <div className="flex flex-col items-center px-3  py-2  rounded-lg bg-muted/50">
-                  <span className="mt-1 text-lg ">{words[viewIndex] && words[viewIndex].englishTranslation || <span className="text-muted-foreground">N/A</span>}</span>
+                  <span className="mt-1 text-lg ">{words[viewIndex] && words[viewIndex].translationOne || <span className="text-muted-foreground">N/A</span>}</span>
                 </div>
                 <div className="flex flex-col items-center px-3 py-2 rounded-lg bg-muted/50">
-                  <span className="mt-1 text-lg ">{words[viewIndex] && words[viewIndex].banglaTranslation || <span className="text-muted-foreground">N/A</span>}</span>
+                  <span className="mt-1 text-lg ">{words[viewIndex] && words[viewIndex].translationTwo || <span className="text-muted-foreground">N/A</span>}</span>
                 </div>
               </div>
 

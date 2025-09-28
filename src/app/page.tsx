@@ -27,13 +27,13 @@ export default function Home() {
         <section className="w-full flex-1 flex flex-col items-center justify-center">
           <div className="container flex max-w-[64rem] flex-col items-center gap-4 text-center justify-center flex-1 px-4 py-12">
             <h1 className="font-heading text-3xl sm:text-5xl md:text-6xl lg:text-7xl">
-              Master German with{" "}
-              <span className="text-primary">English & Bangla</span> Translations
+              Master Any Language with{" "}
+              <span className="text-primary">Smart Learning</span>
             </h1>
             <p className="max-w-[42rem] leading-normal text-muted-foreground sm:text-xl sm:leading-8">
-              Learn German effectively with our spaced repetition system, featuring
-              comprehensive translations in English and Bangla. Start your language
-              learning journey today.
+              Learn any language effectively with our intelligent spaced repetition system.
+              Create personalized word lists, track your progress, and master vocabulary
+              at your own pace.
             </p>
             <div className="space-x-4">
               <Link href="/auth/signup">
@@ -52,9 +52,10 @@ export default function Home() {
             <div className="relative overflow-hidden rounded-lg border bg-background p-2">
               <div className="flex h-[180px] flex-col justify-between rounded-md p-6">
                 <div className="space-y-2">
-                  <h3 className="font-bold">Spaced Repetition</h3>
+                  <h3 className="font-bold">Smart Spaced Repetition</h3>
                   <p className="text-sm text-muted-foreground">
-                    Learn efficiently with our proven spaced repetition algorithm
+                    Learn efficiently with our proven algorithm that adapts to your learning pace.
+                    Words are reviewed at optimal intervals to ensure maximum retention.
                   </p>
                 </div>
               </div>
@@ -62,9 +63,10 @@ export default function Home() {
             <div className="relative overflow-hidden rounded-lg border bg-background p-2">
               <div className="flex h-[180px] flex-col justify-between rounded-md p-6">
                 <div className="space-y-2">
-                  <h3 className="font-bold">Multi-language Support</h3>
+                  <h3 className="font-bold">Custom Word Lists</h3>
                   <p className="text-sm text-muted-foreground">
-                    German words with English and Bangla translations
+                    Create personalized vocabulary lists, import words in bulk, and organize them
+                    into sections for structured learning.
                   </p>
                 </div>
               </div>
@@ -72,9 +74,43 @@ export default function Home() {
             <div className="relative overflow-hidden rounded-lg border bg-background p-2">
               <div className="flex h-[180px] flex-col justify-between rounded-md p-6">
                 <div className="space-y-2">
-                  <h3 className="font-bold">Progress Tracking</h3>
+                  <h3 className="font-bold">Progress Analytics</h3>
                   <p className="text-sm text-muted-foreground">
-                    Monitor your learning progress with detailed statistics
+                    Track your learning journey with detailed statistics, review history,
+                    and performance metrics for each word.
+                  </p>
+                </div>
+              </div>
+            </div>
+            <div className="relative overflow-hidden rounded-lg border bg-background p-2">
+              <div className="flex h-[180px] flex-col justify-between rounded-md p-6">
+                <div className="space-y-2">
+                  <h3 className="font-bold">Multi-Language Support</h3>
+                  <p className="text-sm text-muted-foreground">
+                    Learn any language with support for multiple translations. Add meanings
+                    in your preferred languages for better understanding.
+                  </p>
+                </div>
+              </div>
+            </div>
+            <div className="relative overflow-hidden rounded-lg border bg-background p-2">
+              <div className="flex h-[180px] flex-col justify-between rounded-md p-6">
+                <div className="space-y-2">
+                  <h3 className="font-bold">Flexible Learning Sessions</h3>
+                  <p className="text-sm text-muted-foreground">
+                    Choose your session size, focus on specific sections, and learn at your
+                    own pace with customizable learning sessions.
+                  </p>
+                </div>
+              </div>
+            </div>
+            <div className="relative overflow-hidden rounded-lg border bg-background p-2">
+              <div className="flex h-[180px] flex-col justify-between rounded-md p-6">
+                <div className="space-y-2">
+                  <h3 className="font-bold">Import & Export</h3>
+                  <p className="text-sm text-muted-foreground">
+                    Easily import word lists from files or export your vocabulary for backup
+                    and sharing with other learners.
                   </p>
                 </div>
               </div>
@@ -82,13 +118,11 @@ export default function Home() {
           </div>
         </section>
       </main>
-      <footer className="border-t py-6 md:py-0">
-        <div className="container flex flex-col items-center justify-between gap-4 md:h-24 md:flex-row">
-          <div className="flex flex-col items-center gap-4 px-8 md:flex-row md:gap-2 md:px-0">
-            <p className="text-center text-sm leading-loose text-muted-foreground md:text-left">
-              Built with ❤️ for language learners
+      <footer className="border-t mt-auto">
+        <div className="container flex items-center justify-center h-12">
+            <p className="text-center text-sm leading-loose text-muted-foreground ">
+              Built with ❤️ for language learners worldwide. Start your polyglot journey today!
             </p>
-          </div>
         </div>
       </footer>
     </div>

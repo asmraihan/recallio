@@ -21,16 +21,16 @@ import { Textarea } from "@/components/ui/textarea";
 
 const formSchema = z.object({
   germanWord: z.string().min(1, "German word is required"),
-  englishTranslation: z.string().optional(),
-  banglaTranslation: z.string().optional(),
+  translationOne: z.string().optional(),
+  translationTwo: z.string().optional(),
   exampleSentence: z.string().optional(),
   notes: z.string().optional(),
   section: z.string().min(1, "Section is required"),
 }).refine(
-  (data) => data.englishTranslation || data.banglaTranslation,
+  (data) => data.translationOne || data.translationTwo,
   {
     message: "Either English or Bangla translation must be provided",
-    path: ["englishTranslation", "banglaTranslation"],
+    path: ["translationOne", "translationTwo"],
   }
 );
 
@@ -42,8 +42,8 @@ export function AddWordForm() {
     resolver: zodResolver(formSchema),
     defaultValues: {
       germanWord: "",
-      englishTranslation: "",
-      banglaTranslation: "",
+      translationOne: "",
+      translationTwo: "",
       exampleSentence: "",
       notes: "",
       section: "",
@@ -103,7 +103,7 @@ export function AddWordForm() {
         />
         <FormField
           control={form.control}
-          name="englishTranslation"
+          name="translationOne"
           render={({ field }) => (
             <FormItem>
               <FormLabel>English Translation </FormLabel>
@@ -116,7 +116,7 @@ export function AddWordForm() {
         />
         <FormField
           control={form.control}
-          name="banglaTranslation"
+          name="translationTwo"
           render={({ field }) => (
             <FormItem>
               <FormLabel>Bangla Translation (optional)</FormLabel>
@@ -183,8 +183,8 @@ export function AddWordForm() {
           <h4 className="mb-2 font-semibold">Preview</h4>
           <div className="grid grid-cols-2 gap-2">
             <div><b>German:</b> {values.germanWord}</div>
-            <div><b>English:</b> {values.englishTranslation || <span className="text-muted-foreground">N/A</span>}</div>
-            <div><b>Bangla:</b> {values.banglaTranslation || <span className="text-muted-foreground">N/A</span>}</div>
+            <div><b>English:</b> {values.translationOne || <span className="text-muted-foreground">N/A</span>}</div>
+            <div><b>Bangla:</b> {values.translationTwo || <span className="text-muted-foreground">N/A</span>}</div>
             <div><b>Section:</b> {values.section}</div>
             <div className="col-span-2"><b>Example:</b> {values.exampleSentence || <span className="text-muted-foreground">N/A</span>}</div>
             <div className="col-span-2"><b>Notes:</b> {values.notes || <span className="text-muted-foreground">N/A</span>}</div>

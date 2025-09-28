@@ -36,8 +36,8 @@ export default function LearnPage() {
   type DueWord = {
     id: string;
     germanWord: string;
-    englishTranslation: string | null;
-    banglaTranslation: string | null;
+    translationOne: string | null;
+    translationTwo: string | null;
     section: string;
   };
   const { data: dueWords, isLoading: isLoadingDueWords } = useQuery<DueWord[]>({
@@ -63,7 +63,7 @@ export default function LearnPage() {
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Learn</h1>
           <p className="text-muted-foreground">
-            Master your German vocabulary with our spaced repetition system
+            Master vocabulary with our spaced repetition system
           </p>
         </div>
         <StartSessionDialog />
@@ -162,7 +162,7 @@ export default function LearnPage() {
                 {/* {dueWords && dueWords.length > 0 && (
                   <ul className="mt-2 text-xs text-muted-foreground max-h-32 overflow-y-auto">
                     {dueWords.slice(0, 8).map((word) => (
-                      <li key={word.id} className="truncate">{word.germanWord} ({word.englishTranslation || "?"})</li>
+                      <li key={word.id} className="truncate">{word.germanWord} ({word.translationOne || "?"})</li>
                     ))}
                     {dueWords.length > 8 && (
                       <li className="italic">...and {dueWords.length - 8} more</li>

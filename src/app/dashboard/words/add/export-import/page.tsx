@@ -79,7 +79,7 @@ export default function ExportImportPage() {
                   <li>CSV format with UTF-8 encoding</li>
                   <li>Maximum 100 words per import</li>
                   <li>Required columns: germanWord, section</li>
-                  <li>Optional columns: englishTranslation, banglaTranslation, exampleSentence, notes</li>
+                  <li>Optional columns: translationOne, translationTwo, exampleSentence, notes</li>
                   <li>At least one translation (English or Bangla) is required</li>
                 </ul>
               </div>
@@ -88,9 +88,9 @@ export default function ExportImportPage() {
                 <h3 className="text-lg font-medium mb-2">Format Example</h3>
                 <div className="bg-muted p-3 rounded-md">
                   <code className="text-sm">
-                    germanWord,englishTranslation,
+                    germanWord,translationOne,
                     <br />
-                    banglaTranslation,section<br />
+                    translationTwo,section<br />
                     Haus,house,বাড়ি,1<br />
                     Brot,bread,রুটি,1
                   </code>

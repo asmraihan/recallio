@@ -12,8 +12,8 @@ import { motion, AnimatePresence, useMotionValue, useTransform } from "framer-mo
 interface Word {
   id: string;
   germanWord: string;
-  englishTranslation: string | null;
-  banglaTranslation: string | null;
+  translationOne: string | null;
+  translationTwo: string | null;
   section: string;
   notes: string | null;
   important?: boolean;
@@ -460,9 +460,9 @@ export default function LearningSessionPage() {
                     <CardContent className="p-6 flex items-center justify-center min-h-[280px] md:min-h-[340px] lg:min-h-[400px]">
                       <div className="text-2xl font-bold">
                         {direction === "german_to_english" && currentCard.word.germanWord}
-                        {direction === "english_to_german" && currentCard.word.englishTranslation}
+                        {direction === "english_to_german" && currentCard.word.translationOne}
                         {direction === "german_to_bangla" && currentCard.word.germanWord}
-                        {direction === "bangla_to_german" && currentCard.word.banglaTranslation}
+                        {direction === "bangla_to_german" && currentCard.word.translationTwo}
                       </div>
                     </CardContent>
                   </motion.div>
@@ -481,9 +481,9 @@ export default function LearningSessionPage() {
                     <CardContent className="p-6 flex flex-col items-center justify-center min-h-[280px] md:min-h-[340px] lg:min-h-[400px]">
                       {direction === "german_to_english" && (
                         <>
-                          <p className="text-2xl font-bold mb-4">{currentCard.word.englishTranslation}</p>
-                          {currentCard.word.banglaTranslation && (
-                            <p className="text-lg text-gray-600">{currentCard.word.banglaTranslation}</p>
+                          <p className="text-2xl font-bold mb-4">{currentCard.word.translationOne}</p>
+                          {currentCard.word.translationTwo && (
+                            <p className="text-lg text-gray-600">{currentCard.word.translationTwo}</p>
                           )}
                           {currentCard.word.notes && (
                             <p className="text-sm text-gray-500 mt-8 text-center">N.B. {currentCard.word.notes}</p>
@@ -493,8 +493,8 @@ export default function LearningSessionPage() {
                       {direction === "english_to_german" && (
                         <>
                           <p className="text-2xl font-bold mb-4">{currentCard.word.germanWord}</p>
-                          {currentCard.word.banglaTranslation && (
-                            <p className="text-lg text-gray-600">{currentCard.word.banglaTranslation}</p>
+                          {currentCard.word.translationTwo && (
+                            <p className="text-lg text-gray-600">{currentCard.word.translationTwo}</p>
                           )}
                           {currentCard.word.notes && (
                             <p className="text-sm text-gray-500 mt-8 text-center">N.B. {currentCard.word.notes}</p>
@@ -503,9 +503,9 @@ export default function LearningSessionPage() {
                       )}
                       {direction === "german_to_bangla" && (
                         <>
-                          <p className="text-2xl font-bold mb-4">{currentCard.word.banglaTranslation}</p>
-                          {currentCard.word.englishTranslation && (
-                            <p className="text-lg text-gray-600">{currentCard.word.englishTranslation}</p>
+                          <p className="text-2xl font-bold mb-4">{currentCard.word.translationTwo}</p>
+                          {currentCard.word.translationOne && (
+                            <p className="text-lg text-gray-600">{currentCard.word.translationOne}</p>
                           )}
                           {currentCard.word.notes && (
                             <p className="text-sm text-gray-500 mt-8 text-center">N.B. {currentCard.word.notes}</p>
@@ -515,8 +515,8 @@ export default function LearningSessionPage() {
                       {direction === "bangla_to_german" && (
                         <>
                           <p className="text-2xl font-bold mb-4">{currentCard.word.germanWord}</p>
-                          {currentCard.word.englishTranslation && (
-                            <p className="text-lg text-gray-600">{currentCard.word.englishTranslation}</p>
+                          {currentCard.word.translationOne && (
+                            <p className="text-lg text-gray-600">{currentCard.word.translationOne}</p>
                           )}
                           {currentCard.word.notes && (
                             <p className="text-sm text-gray-500 mt-8 text-center">N.B. {currentCard.word.notes}</p>

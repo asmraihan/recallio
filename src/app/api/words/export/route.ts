@@ -8,8 +8,8 @@ import { Parser } from "json2csv";
 
 const fields = [
   "germanWord",
-  "englishTranslation",
-  "banglaTranslation",
+  "translationOne",
+  "translationTwo",
   "exampleSentence",
   "notes",
   "section",

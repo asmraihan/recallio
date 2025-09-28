@@ -35,8 +35,8 @@ export async function GET() {
       .select({
         id: words.id,
         germanWord: words.germanWord,
-        englishTranslation: words.englishTranslation,
-        banglaTranslation: words.banglaTranslation,
+        translationOne: words.translationOne,
+        translationTwo: words.translationTwo,
         section: words.section,
       })
       .from(words)

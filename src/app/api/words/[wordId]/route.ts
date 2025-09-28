@@ -8,13 +8,13 @@ import { z } from "zod";
 
 const wordSchema = z.object({
   germanWord: z.string().min(1, "German word is required"),
-  englishTranslation: z.string().optional(),
-  banglaTranslation: z.string().optional(),
+  translationOne: z.string().optional(),
+  translationTwo: z.string().optional(),
   exampleSentence: z.string().optional(),
   notes: z.string().optional(),
   section: z.string().min(1, "Section is required"),
 }).refine(
-  (data) => data.englishTranslation || data.banglaTranslation,
+  (data) => data.translationOne || data.translationTwo,
   "Either English or Bangla translation must be provided"
 );
 

@@ -34,8 +34,8 @@ type FormValues = z.infer<typeof formSchema>;
 
 interface ParsedWord {
   germanWord: string;
-  banglaTranslation: string;
-  englishTranslation: string;
+  translationTwo: string;
+  translationOne: string;
   exampleSentence: string | null;
   section: string;
 }
@@ -105,8 +105,8 @@ export function BatchAddForm() {
 
       words.push({
         germanWord: german.trim(),
-        banglaTranslation: bangla.trim(),
-        englishTranslation: english.trim(),
+        translationTwo: bangla.trim(),
+        translationOne: english.trim(),
         exampleSentence: example ? example.trim() : null,
         section: form.getValues("section"),
       });
@@ -133,8 +133,8 @@ export function BatchAddForm() {
       // Prepare words with all fields including example sentence
       const wordsToSubmit = parsedWords.map((word, index) => ({
         germanWord: word.germanWord,
-        banglaTranslation: word.banglaTranslation,
-        englishTranslation: word.englishTranslation,
+        translationTwo: word.translationTwo,
+        translationOne: word.translationOne,
         exampleSentence: word.exampleSentence,
         section: word.section
       }));
@@ -269,8 +269,8 @@ export function BatchAddForm() {
                         className="grid grid-cols-5 gap-4 p-4 border-b last:border-0"
                       >
                         <div>{word.germanWord}</div>
-                        <div>{word.banglaTranslation}</div>
-                        <div>{word.englishTranslation}</div>
+                        <div>{word.translationTwo}</div>
+                        <div>{word.translationOne}</div>
                         <div>{word.exampleSentence || "-"}</div>
                         <div>{word.section}</div>
                       </div>

@@ -9,8 +9,8 @@ import { eq } from "drizzle-orm";
 
 const wordSchema = z.object({
   germanWord: z.string().min(1, "German word is required"),
-  englishTranslation: z.string().nullable(),
-  banglaTranslation: z.string().nullable(),
+  translationOne: z.string().nullable(),
+  translationTwo: z.string().nullable(),
   exampleSentence: z.string().nullable(),
   notes: z.string().nullable(),
   section: z.string().min(1, "Section is required"),
