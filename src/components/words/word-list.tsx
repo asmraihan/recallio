@@ -1,19 +1,18 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+import { useState, useEffect, useMemo } from "react";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Pencil, Trash2, Star, Volume2, ChevronLeft, ChevronRight, Eye, Play, Pause } from "lucide-react";
 import { toast } from "sonner";
 import { useQueryClient } from "@tanstack/react-query";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+  useReactTable,
+  getCoreRowModel,
+  flexRender,
+  ColumnDef,
+} from "@tanstack/react-table";
 
 // Match the database schema
 interface Word {
@@ -32,9 +31,13 @@ interface Word {
 
 interface WordListProps {
   words: Word[];
+  rowSelection?: Record<string, boolean>;
+  onRowSelectionChange?: (updater: any) => void;
+  columnVisibility?: Record<string, boolean>;
+  onColumnVisibilityChange?: (updater: any) => void;
 }
 
-export function WordList({ words }: WordListProps) {
+export function WordList({ words, rowSelection: rowSelectionProp, onRowSelectionChange, columnVisibility: columnVisibilityProp, onColumnVisibilityChange }: WordListProps) {
   const queryClient = useQueryClient();
   const [isDeleting, setIsDeleting] = useState<string | null>(null);
   const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
@@ -42,6 +45,15 @@ export function WordList({ words }: WordListProps) {
   const [ttsLoading, setTtsLoading] = useState(false);
   const [ttsAudio, setTtsAudio] = useState<HTMLAudioElement | null>(null);
   const [isAutoplayOn, setIsAutoplayOn] = useState(false);
+  const [internalRowSelection, setInternalRowSelection] = useState<Record<string, boolean>>({});
+  const [internalColumnVisibility, setInternalColumnVisibility] = useState<Record<string, boolean>>({
+    germanWord: true,
+    translationOne: true,
+    translationTwo: true,
+    section: true,
+    exampleSentence: true,
+    actions: true,
+  });
   // Remove local important state, rely on words prop
 
   async function handleDelete(id: string) {
@@ -137,101 +149,178 @@ export function WordList({ words }: WordListProps) {
     };
   }, [isAutoplayOn, viewIndex]);
 
+  const columns = useMemo<ColumnDef<Word>[]>(() => [
+    {
+      id: "select",
+      header: ({ table }: any) => (
+        <Checkbox
+          checked={
+            table.getIsAllPageRowsSelected() ||
+            (table.getIsSomePageRowsSelected() && "indeterminate")
+          }
+          onCheckedChange={(value: any) => table.toggleAllPageRowsSelected(!!value)}
+          aria-label="Select all"
+        />
+      ),
+      cell: ({ row }: any) => (
+        <Checkbox
+          checked={row.getIsSelected()}
+          onCheckedChange={(value: any) => row.toggleSelected(!!value)}
+          aria-label="Select row"
+        />
+      ),
+      enableSorting: false,
+      enableHiding: false,
+    },
+    {
+      accessorKey: "germanWord",
+      header: "German",
+      cell: ({ row }: any) => (
+        <div className="flex items-center gap-2">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-6 w-6"
+            onClick={() => playTTS(row.original.germanWord)}
+            disabled={ttsLoading}
+          >
+            <Volume2 className="h-3 w-3" />
+          </Button>
+          {row.original.germanWord}
+        </div>
+      ),
+    },
+    {
+      accessorKey: "translationOne",
+      header: "English",
+      cell: (info: any) => info.getValue() || <span className="text-muted-foreground">N/A</span>,
+    },
+    {
+      accessorKey: "translationTwo",
+      header: "Bangla",
+      cell: (info: any) => info.getValue() || <span className="text-muted-foreground">N/A</span>,
+    },
+    {
+      accessorKey: "section",
+      header: "Section",
+    },
+    {
+      accessorKey: "exampleSentence",
+      header: "Sentence",
+      cell: ({ row }: any) => (
+        row.original.exampleSentence ? (
+          <div className="flex items-center gap-2">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-6 w-6"
+              onClick={() => playTTS(row.original.exampleSentence!)}
+              disabled={ttsLoading}
+            >
+              <Volume2 className="h-3 w-3" />
+            </Button>
+            <span className="italic">{row.original.exampleSentence}</span>
+          </div>
+        ) : (
+          <span className="text-muted-foreground">N/A</span>
+        )
+      ),
+    },
+    {
+      id: "actions",
+      header: "Actions",
+      cell: ({ row }: any) => (
+        <div className="flex justify-end gap-2">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => setViewIndex(row.index)}
+            title="View word details"
+          >
+            <Eye className="h-4 w-4" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            asChild
+          >
+            <a href={`/dashboard/words/${row.original.id}/edit`} title="Edit word">
+              <Pencil className="h-4 w-4" />
+            </a>
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => setPendingDeleteId(row.original.id)}
+            disabled={isDeleting === row.original.id}
+          >
+            <Trash2 className="h-4 w-4" />
+          </Button>
+        </div>
+      ),
+    },
+  ], [playTTS, ttsLoading, isDeleting]);
+
+  const handleRowSelectionChange = (updater: any) => {
+    if (onRowSelectionChange) return onRowSelectionChange(updater);
+    setInternalRowSelection((old) => (typeof updater === "function" ? updater(old) : updater));
+  };
+
+  const handleColumnVisibilityChange = (updater: any) => {
+    if (onColumnVisibilityChange) return onColumnVisibilityChange(updater);
+    setInternalColumnVisibility((old) => (typeof updater === "function" ? updater(old) : updater));
+  };
+
+  const table = useReactTable({
+    data: words,
+    columns,
+    state: {
+      rowSelection: rowSelectionProp ?? internalRowSelection,
+      columnVisibility: columnVisibilityProp ?? internalColumnVisibility,
+    },
+    onRowSelectionChange: handleRowSelectionChange,
+    onColumnVisibilityChange: handleColumnVisibilityChange,
+    getCoreRowModel: getCoreRowModel(),
+    enableRowSelection: true,
+    getRowId: (row: any) => row.id,
+  });
+
+  const rows = table.getRowModel().rows;
+
   return (
     <div className="rounded-md border overflow-x-auto">
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>German</TableHead>
-            <TableHead>English</TableHead>
-            <TableHead>Bangla</TableHead>
-            <TableHead>Section</TableHead>
-            {/* <TableHead>Example</TableHead>
-            <TableHead>Notes</TableHead> */}
-            <TableHead>Sentence</TableHead>
-            <TableHead className="text-right">Actions</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {words.map((word, idx) => (
-            <TableRow key={word.id}>
-              <TableCell className="font-medium">
-                <div className="flex items-center gap-2">
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-6 w-6"
-                    onClick={() => playTTS(word.germanWord)}
-                    disabled={ttsLoading}
-                  >
-                    <Volume2 className="h-3 w-3" />
-                  </Button>
-                  {word.germanWord}
-                </div>
-              </TableCell>
-              <TableCell>{word.translationOne || <span className="text-muted-foreground">N/A</span>}</TableCell>
-              <TableCell>{word.translationTwo || <span className="text-muted-foreground">N/A</span>}</TableCell>
-              <TableCell>{word.section}</TableCell>
-              {/* <TableCell>{word.exampleSentence || <span className="text-muted-foreground">N/A</span>}</TableCell>
-              <TableCell>{word.notes || <span className="text-muted-foreground">N/A</span>}</TableCell> */}
-              <TableCell>
-                {word.exampleSentence ? (
-                  <div className="flex items-center gap-2">
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-6 w-6"
-                      onClick={() => playTTS(word.exampleSentence!)}
-                      disabled={ttsLoading}
-                    >
-                      <Volume2 className="h-3 w-3" />
-                    </Button>
-                    {word.exampleSentence}
-                  </div>
-                ) : (
-                  <span className="text-muted-foreground">N/A</span>
-                )}
-              </TableCell>
-              <TableCell className="text-right">
-                <div className="flex justify-end gap-2">
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => setViewIndex(idx)}
-                    title="View word details"
-                  >
-                    <Eye className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    asChild
-                  >
-                    <a href={`/dashboard/words/${word.id}/edit`} title="Edit word">
-                      <Pencil className="h-4 w-4" />
-                    </a>
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => setPendingDeleteId(word.id)}
-                    disabled={isDeleting === word.id}
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                </div>
-              </TableCell>
-            </TableRow>
+      <table className="min-w-full divide-y">
+        <thead className="bg-muted/20">
+          {table.getHeaderGroups().map((headerGroup: any) => (
+            <tr key={headerGroup.id}>
+              {headerGroup.headers.map((header: any) => (
+                <th key={header.id} className="px-3 py-2 text-left text-sm font-medium text-muted-foreground">
+                  {header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
+                </th>
+              ))}
+            </tr>
           ))}
-          {words.length === 0 && (
-            <TableRow>
-              <TableCell colSpan={8} className="text-center text-muted-foreground">
+        </thead>
+        <tbody>
+          {rows.map((row: any) => (
+            <tr key={row.id} className="border-t">
+              {row.getVisibleCells().map((cell: any) => (
+                <td key={cell.id} className="px-3 py-2 align-top text-sm">
+                  {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                </td>
+              ))}
+            </tr>
+          ))}
+
+          {rows.length === 0 && (
+            <tr>
+              <td colSpan={columns.length} className="text-center text-muted-foreground p-6">
                 No words added yet. Start by adding your first word!
-              </TableCell>
-            </TableRow>
+              </td>
+            </tr>
           )}
-        </TableBody>
-      </Table>
+        </tbody>
+      </table>
       {/* Confirm Delete Modal */}
       <Dialog open={!!pendingDeleteId} onOpenChange={(open) => { if (!open) setPendingDeleteId(null); }}>
         <DialogContent>

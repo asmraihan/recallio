@@ -3,6 +3,14 @@
 import { useState, useEffect, useCallback } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuCheckboxItem,
+} from "@/components/ui/dropdown-menu";
 import { SingleSelect } from "@/components/ui/single-select";
 import { WordList } from "@/components/words/word-list";
 import { Loader2, Upload } from "lucide-react";
@@ -42,13 +50,22 @@ export default function WordsPage() {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  
+
   const [sections, setSections] = useState<string[]>([]);
   const [sectionsLoaded, setSectionsLoaded] = useState(false);
   const [searchInput, setSearchInput] = useState(searchParams.get("search") || "");
-  
+
   const section = searchParams.get("section");
   const debouncedSearch = useDebounce(searchInput, 300);
+  const [rowSelection, setRowSelection] = useState<Record<string, boolean>>({});
+  const [columnVisibility, setColumnVisibility] = useState<Record<string, boolean>>({
+    germanWord: true,
+    translationOne: true,
+    translationTwo: true,
+    section: true,
+    exampleSentence: true,
+    actions: true,
+  });
 
   const createQueryString = useCallback(
     (name: string, value: string) => {
@@ -180,6 +197,15 @@ export default function WordsPage() {
                 {filteredWords.length} found
               </span>
             )}
+
+            {
+           !debouncedSearch && Object.values(rowSelection).some((isSelected) => isSelected)
+              && (<span
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground pointer-events-none select-none bg-white dark:bg-background px-1"
+                style={{ zIndex: 2 }}
+              >{Object.values(rowSelection).filter(Boolean).length} selected
+              </span>
+              )}
           </div>
           <SingleSelect
             value={section ?? undefined}
@@ -195,6 +221,33 @@ export default function WordsPage() {
           />
         </div>
         <div className="flex items-center gap-2">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline">Columns</Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuLabel>Toggle columns</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              {[
+                { id: "germanWord", label: "German" },
+                { id: "translationOne", label: "English" },
+                { id: "translationTwo", label: "Bangla" },
+                { id: "section", label: "Section" },
+                { id: "exampleSentence", label: "Sentence" },
+                { id: "actions", label: "Actions" },
+              ].map((col) => (
+                <DropdownMenuCheckboxItem
+                  key={col.id}
+                  className="capitalize"
+                  checked={!!columnVisibility[col.id]}
+                  onCheckedChange={(v) => setColumnVisibility((prev) => ({ ...prev, [col.id]: !!v }))}
+                >
+                  {col.label}
+                </DropdownMenuCheckboxItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
+
           <SingleSelect
             value={searchParams.get("filter") || "default"}
             onValueChange={(value) => updateFilters("filter", value)}
@@ -204,6 +257,8 @@ export default function WordsPage() {
             ]}
             className="w-[180px]"
           />
+
+
         </div>
       </div>
 
@@ -216,7 +271,13 @@ export default function WordsPage() {
           </div>
         </div>
       ) : (
-        <WordList words={filteredWords} />
+        <WordList
+          words={filteredWords}
+          rowSelection={rowSelection}
+          onRowSelectionChange={setRowSelection}
+          columnVisibility={columnVisibility}
+          onColumnVisibilityChange={setColumnVisibility}
+        />
       )}
     </div>
   );
