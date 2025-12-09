@@ -153,6 +153,7 @@ export function WordList({ words, rowSelection: rowSelectionProp, onRowSelection
     {
       id: "select",
       header: ({ table }: any) => (
+                <div className="flex items-center">
         <Checkbox
           checked={
             table.getIsAllPageRowsSelected() ||
@@ -160,15 +161,18 @@ export function WordList({ words, rowSelection: rowSelectionProp, onRowSelection
           }
           onCheckedChange={(value: any) => table.toggleAllPageRowsSelected(!!value)}
           aria-label="Select all"
+      
         />
+        </div>
       ),
       cell: ({ row }: any) => (
+              <div className="flex items-center">
         <Checkbox
           checked={row.getIsSelected()}
           onCheckedChange={(value: any) => row.toggleSelected(!!value)}
           aria-label="Select row"
-          className="lg:ml-4 ml-0"
         />
+        </div>
       ),
       enableSorting: false,
       enableHiding: false,

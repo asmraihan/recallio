@@ -16,16 +16,67 @@ import { Download } from "lucide-react";
 import { toast } from "sonner";
 import { useQueryClient } from "@tanstack/react-query";
 
-export function ExportDialog() {
+import { Checkbox } from "@/components/ui/checkbox";
+
+type ExportDialogProps = {
+  selectedIds?: string[];
+  visibleColumns?: string[];
+  section?: string; // currently selected section
+  totalWords?: number; // total words in the current view
+  allowAll?: boolean; // when true, show an "Export all" option
+};
+
+const columnLabels: Record<string, string> = {
+  germanWord: "German",
+  translationOne: "English",
+  translationTwo: "Bangla",
+  section: "Section",
+  exampleSentence: "Sentence",
+  notes: "Notes",
+  createdAt: "Created",
+  updatedAt: "Updated",
+};
+
+export function ExportDialog({ selectedIds, visibleColumns, section, totalWords = 0, allowAll = true }: ExportDialogProps) {
   const [isOpen, setIsOpen] = useState(false);
+  const [exportAll, setExportAll] = useState(false);
+
+  const numSelected = Array.isArray(selectedIds) ? selectedIds.filter(Boolean).length : 0;
+  const hasSelection = numSelected > 0;
+  const rowsToExport = exportAll ? totalWords : hasSelection ? numSelected : totalWords;
+  const columnsToExport = Array.isArray(visibleColumns) ? visibleColumns.filter(Boolean).length : 0;
 
   const handleExport = async () => {
     try {
-      const response = await fetch("/api/words/export");
+      const payload: any = {};
+      if (exportAll) {
+        payload.all = true;
+      } else if (hasSelection) {
+        payload.ids = selectedIds;
+      } else {
+        // fallback: export all
+        payload.all = true;
+      }
+
+      if (Array.isArray(visibleColumns) && visibleColumns.length > 0) {
+        payload.columns = visibleColumns;
+      }
+
+      if (section && section !== "all") {
+        payload.section = section;
+      }
+
+      const response = await fetch("/api/words/export", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
       if (!response.ok) {
         const error = await response.json();
         throw new Error(error.error || "Failed to export words");
       }
+
       const contentDisposition = response.headers.get("Content-Disposition");
       const filename = contentDisposition
         ? contentDisposition.split("filename=")[1].replace(/"/g, "")
@@ -41,6 +92,7 @@ export function ExportDialog() {
       document.body.removeChild(a);
       toast.success("Words exported successfully");
       setIsOpen(false);
+      setExportAll(false);
     } catch (error) {
       console.error("Export error:", error);
       toast.error("Failed to export words");
@@ -55,7 +107,7 @@ export function ExportDialog() {
           Export
         </Button>
       </DialogTrigger>
-      <DialogContent>
+      <DialogContent className="max-w-md">
         <DialogHeader>
           <DialogTitle>Export Words</DialogTitle>
           <DialogDescription>
@@ -63,7 +115,62 @@ export function ExportDialog() {
           </DialogDescription>
         </DialogHeader>
         <div className="flex flex-col gap-4 py-4">
-          <Button onClick={handleExport} variant="outline">
+          {allowAll && (
+            <div className="flex items-center gap-2">
+              <Checkbox id="export-all" checked={exportAll} onCheckedChange={(v) => setExportAll(!!v)} />
+              <Label htmlFor="export-all" className="cursor-pointer">Export all words</Label>
+            </div>
+          )}
+
+          {/* Preview Section */}
+          <div className="rounded-md bg-muted/50 p-3 space-y-2 text-sm">
+            <div className="font-medium text-foreground">Export Preview:</div>
+            
+            <div className="flex justify-between">
+              <span className="text-muted-foreground">Rows:</span>
+              <span className="font-medium">{rowsToExport} word{rowsToExport !== 1 ? 's' : ''}</span>
+            </div>
+
+            <div className="flex justify-between">
+              <span className="text-muted-foreground">Columns:</span>
+              <span className="font-medium">{columnsToExport}</span>
+            </div>
+
+            {section && section !== "all" && (
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Section:</span>
+                <span className="font-medium">Section {section}</span>
+              </div>
+            )}
+
+            {section === "all" && (
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Section:</span>
+                <span className="font-medium">All Sections</span>
+              </div>
+            )}
+
+            {hasSelection && !exportAll && (
+              <div className="text-xs text-muted-foreground italic pt-2 border-t">
+                Exporting {numSelected} selected row{numSelected !== 1 ? 's' : ''}
+              </div>
+            )}
+          </div>
+
+          {columnsToExport > 0 && (
+            <div className="text-xs text-muted-foreground">
+              <span className="font-medium">Columns included:</span>
+              <div className="mt-1 flex flex-wrap gap-1">
+                {visibleColumns?.map((col) => (
+                  <span key={col} className="bg-background px-2 py-1 rounded">
+                    {columnLabels[col] || col}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
+
+          <Button onClick={handleExport} className="w-full">
             <Download className="mr-2 h-4 w-4" />
             Export to CSV
           </Button>

@@ -170,7 +170,13 @@ export default function WordsPage() {
           </p>
         </div>
         <div className="flex gap-2">
-          <ExportDialog />
+          <ExportDialog
+            selectedIds={Object.keys(rowSelection).filter((id) => rowSelection[id])}
+            visibleColumns={Object.keys(columnVisibility).filter((k) => columnVisibility[k] && k !== "actions")}
+            section={section ?? undefined}
+            totalWords={filteredWords.length}
+            allowAll={false}
+          />
           <Button asChild variant="outline">
             <Link href="/dashboard/words/add">
               <Upload className="mr-2 h-4 w-4" />
