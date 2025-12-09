@@ -17,6 +17,7 @@ interface Word {
   section: string;
   notes: string | null;
   important?: boolean;
+  exampleSentence: string | null;
 }
 
 interface CardState {
@@ -463,6 +464,12 @@ export default function LearningSessionPage() {
                         {direction === "english_to_german" && currentCard.word.translationOne}
                         {direction === "german_to_bangla" && currentCard.word.germanWord}
                         {direction === "bangla_to_german" && currentCard.word.translationTwo}
+                      </div>
+
+                      <div className="absolute bottom-4 text-sm text-gray-500">
+                       {currentCard.word.exampleSentence && (
+                        <em>"{currentCard.word.exampleSentence}"</em>
+                       )}
                       </div>
                     </CardContent>
                   </motion.div>

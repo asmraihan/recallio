@@ -167,6 +167,7 @@ export function WordList({ words, rowSelection: rowSelectionProp, onRowSelection
           checked={row.getIsSelected()}
           onCheckedChange={(value: any) => row.toggleSelected(!!value)}
           aria-label="Select row"
+          className="lg:ml-4 ml-0"
         />
       ),
       enableSorting: false,
@@ -293,22 +294,31 @@ export function WordList({ words, rowSelection: rowSelectionProp, onRowSelection
         <thead className="bg-muted/20">
           {table.getHeaderGroups().map((headerGroup: any) => (
             <tr key={headerGroup.id}>
-              {headerGroup.headers.map((header: any) => (
-                <th key={header.id} className="px-3 py-2 text-left text-sm font-medium text-muted-foreground">
-                  {header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
-                </th>
-              ))}
+              {headerGroup.headers.map((header: any) => {
+                // align select column center, actions right, others left
+                const thClass = `px-4 py-3 text-sm font-medium text-muted-foreground align-middle ${header.column.id === 'select' ? 'text-center' : header.column.id === 'actions' ? 'text-right' : 'text-left'}`;
+                return (
+                  <th key={header.id} className={thClass}>
+                    {header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
+                  </th>
+                )
+              })}
             </tr>
           ))}
         </thead>
         <tbody>
           {rows.map((row: any) => (
             <tr key={row.id} className="border-t">
-              {row.getVisibleCells().map((cell: any) => (
-                <td key={cell.id} className="px-3 py-2 align-top text-sm">
-                  {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                </td>
-              ))}
+              {row.getVisibleCells().map((cell: any) => {
+                const tdClass = `px-4 py-3 align-middle text-sm ${cell.column.id === 'select' ? 'text-center' : cell.column.id === 'actions' ? 'text-right' : 'text-left'}`;
+                return (
+                  <td key={cell.id} className={tdClass}>
+                    <div className={cell.column.id === 'actions' ? 'flex justify-end items-center gap-2' : 'flex items-center gap-2'}>
+                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                    </div>
+                  </td>
+                )
+              })}
             </tr>
           ))}
 
