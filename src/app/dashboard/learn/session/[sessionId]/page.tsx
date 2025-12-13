@@ -68,7 +68,7 @@ export default function LearningSessionPage() {
         const voices = await res.json();
         setTtsVoices(voices);
       }
-    } catch {}
+    } catch { }
   };
 
   async function playTTS(text: string) {
@@ -85,7 +85,7 @@ export default function LearningSessionPage() {
       }
 
       const data = await response.json();
-      
+
       if (ttsAudio) {
         ttsAudio.pause();
         ttsAudio.src = '';
@@ -132,7 +132,7 @@ export default function LearningSessionPage() {
         setCurrentIndex(firstUnanswered === -1 ? fetchedWords.length - 1 : firstUnanswered);
         setLastUnansweredIndex(firstUnanswered === -1 ? fetchedWords.length - 1 : firstUnanswered);
 
-  // No need to set important state, use word.important directly
+        // No need to set important state, use word.important directly
       } catch (err: unknown) {
         setError(err instanceof Error ? err.message : "Unknown error");
       } finally {
@@ -341,10 +341,10 @@ export default function LearningSessionPage() {
             <span className="font-semibold text-xs">
               {sessionType.charAt(0).toUpperCase() + sessionType.slice(1)} Session
             </span>
-        
+
             {sections.length > 0 && (
               <span className="text-xs px-2 py-0.5 rounded bg-primary/10 text-primary font-medium">
-              Section{sections.length > 1 ? 's' : ''}: {sections.join(", ")}
+                Section{sections.length > 1 ? 's' : ''}: {sections.join(", ")}
               </span>
             )}
           </div>
@@ -467,9 +467,9 @@ export default function LearningSessionPage() {
                       </div>
 
                       <div className="absolute bottom-4 text-sm text-gray-500">
-                       {currentCard.word.exampleSentence && (
-                        <em>"{currentCard.word.exampleSentence}"</em>
-                       )}
+                        {currentCard.word.exampleSentence && (
+                          <em>"{currentCard.word.exampleSentence}"</em>
+                        )}
                       </div>
                     </CardContent>
                   </motion.div>
@@ -562,13 +562,12 @@ export default function LearningSessionPage() {
                     onClick={e => {
                       e.stopPropagation();
                       let text = "";
-                      if (direction === "german_to_english" || direction === "german_to_bangla") text = currentCard.word.germanWord;
-                      else if (direction === "english_to_german" || direction === "bangla_to_german") text = currentCard.word.germanWord;
+                      text = currentCard.word.germanWord + ", ." + currentCard.word.exampleSentence;
                       playTTS(text);
                     }}
                     title="Play German TTS"
                   >
-                    <Volume2 className={clsx("h-6 w-6", ttsLoading && "animate-pulse")}/>
+                    <Volume2 className={clsx("h-6 w-6", ttsLoading && "animate-pulse")} />
                   </button>
                 )}
               </Card>
