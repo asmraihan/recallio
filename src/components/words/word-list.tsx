@@ -133,21 +133,68 @@ export function WordList({ words, rowSelection: rowSelectionProp, onRowSelection
   const handlePrev = () => setViewIndex(i => (i !== null && i > 0 ? i - 1 : i));
   const handleNext = () => setViewIndex(i => (i !== null && i < words.length - 1 ? i + 1 : i));
 
-  // Autoplay functionality
+  // State for sentence translation
+  const [sentenceTranslation, setSentenceTranslation] = useState<string | null>(null);
+  const [translationLoading, setTranslationLoading] = useState(false);
+
+  // Translate sentence using browser AI API when viewing a word
   useEffect(() => {
-    let timer: NodeJS.Timeout;
-    if (isAutoplayOn && viewIndex !== null && viewIndex < words.length - 1) {
-      // Play TTS for current word when autoplay is on
-      // playTTS(words[viewIndex].germanWord);
-      
-      timer = setTimeout(() => {
-        handleNext();
-      }, 10000); // 10 seconds delay
+    if (viewIndex === null) {
+      setSentenceTranslation(null);
+      return;
     }
-    return () => {
-      if (timer) clearTimeout(timer);
+
+    const sentence = words[viewIndex]?.exampleSentence;
+    if (!sentence) {
+      setSentenceTranslation(null);
+      return;
+    }
+
+    const translateSentence = async () => {
+      setTranslationLoading(true);
+      try {
+        // Check if Translator API is available in the browser
+        if (typeof (window as any).Translator === "undefined") {
+          console.log("Translator API not available in this browser");
+          setSentenceTranslation(null);
+          return;
+        }
+
+        // Check availability of English to German translation
+        const availability = await (window as any).Translator.availability({
+          sourceLanguage: "en",
+          targetLanguage: "de",
+        });
+
+        if (availability === "unavailable") {
+          console.log("Translation model not available");
+          setSentenceTranslation(null);
+          return;
+        }
+
+        // Create translator instance (may download model if needed)
+        const translator = await (window as any).Translator.create({
+          sourceLanguage: "de",
+          targetLanguage: "en",
+        });
+
+        // Translate the sentence
+        const translation = await translator.translate(sentence);
+        console.log("Translation result:", translation);
+        setSentenceTranslation(translation);
+
+        // Clean up resources
+        translator.destroy();
+      } catch (error) {
+        console.log("Translation failed:", error);
+        setSentenceTranslation(null);
+      } finally {
+        setTranslationLoading(false);
+      }
     };
-  }, [isAutoplayOn, viewIndex]);
+
+    translateSentence();
+  }, [viewIndex, words]);
 
   const columns = useMemo<ColumnDef<Word>[]>(() => [
     {
@@ -393,17 +440,30 @@ export function WordList({ words, rowSelection: rowSelectionProp, onRowSelection
               {/* Example Sentence */}
               <div className="px-3 py-2 rounded-lg">
                 {words[viewIndex] && words[viewIndex].exampleSentence ? (
-                  <div className="flex items-center gap-2">
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-7 w-7"
-                      onClick={() => playTTS(words[viewIndex].exampleSentence!)}
-                      disabled={ttsLoading}
-                    >
-                      <Volume2 className="h-4 w-4" />
-                    </Button>
-                    <span className="italic">{words[viewIndex].exampleSentence}</span>
+                  <div className="flex flex-col gap-2">
+                    <div className="flex items-center gap-2">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-7 w-7"
+                        onClick={() => playTTS(words[viewIndex].exampleSentence!)}
+                        disabled={ttsLoading}
+                      >
+                        <Volume2 className="h-4 w-4" />
+                      </Button>
+                      <span className="italic">{words[viewIndex].exampleSentence}</span>
+                    </div>
+                    {/* Translation using browser AI API */}
+                    {sentenceTranslation && (
+                      <div className="text-sm italic text-muted-foreground pl-9 border-l-2 border-muted">
+                        {sentenceTranslation}
+                      </div>
+                    )}
+                    {translationLoading && (
+                      <div className="text-xs text-muted-foreground pl-9">
+                        Translating...
+                      </div>
+                    )}
                   </div>
                 ) : (
                   <span className="text-muted-foreground">Sentence: N/A</span>
