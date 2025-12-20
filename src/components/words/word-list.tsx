@@ -202,6 +202,7 @@ export function WordList({ words, rowSelection: rowSelectionProp, onRowSelection
       header: ({ table }: any) => (
                 <div className="flex items-center">
         <Checkbox
+          className="border border-border"
           checked={
             table.getIsAllPageRowsSelected() ||
             (table.getIsSomePageRowsSelected() && "indeterminate")
@@ -215,6 +216,7 @@ export function WordList({ words, rowSelection: rowSelectionProp, onRowSelection
       cell: ({ row }: any) => (
               <div className="flex items-center">
         <Checkbox
+        className="border border-border"
           checked={row.getIsSelected()}
           onCheckedChange={(value: any) => row.toggleSelected(!!value)}
           aria-label="Select row"

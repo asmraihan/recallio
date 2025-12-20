@@ -121,8 +121,10 @@ export function StartSessionDialog({ children, mode = "new" }: StartSessionDialo
         {children || <Button className="cursor-pointer">Start Learning</Button>}
       </DialogTrigger>
       <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Start Learning Session</DialogTitle>
+        <DialogHeader className="hidden">
+          <DialogTitle>
+            Start Learning Session
+            </DialogTitle>
           <DialogDescription>
             Choose your learning preferences to start a new session
           </DialogDescription>
@@ -137,7 +139,9 @@ export function StartSessionDialog({ children, mode = "new" }: StartSessionDialo
               <SelectTrigger id="session-type">
                 <SelectValue placeholder="Select session type" />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent 
+              className="max-w-md"
+              >
                 <SelectItem value="new">Learn New Words</SelectItem>
                 {/* <SelectItem value="randomized">Randomized Session</SelectItem> */}
                 <SelectItem value="mistakes">Practice Mistakes</SelectItem>
@@ -210,7 +214,9 @@ export function StartSessionDialog({ children, mode = "new" }: StartSessionDialo
               <SelectTrigger id="direction">
                 <SelectValue placeholder="Select learning direction" />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent
+              className="max-w-md"
+              >
                 <SelectItem value="german_to_english">German → English</SelectItem>
                 <SelectItem value="english_to_german">English → German</SelectItem>
                 <SelectItem value="german_to_bangla">German → Bangla</SelectItem>

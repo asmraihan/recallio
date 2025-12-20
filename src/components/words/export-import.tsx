@@ -117,7 +117,9 @@ export function ExportDialog({ selectedIds, visibleColumns, section, totalWords 
         <div className="flex flex-col gap-4 py-4">
           {allowAll && (
             <div className="flex items-center gap-2">
-              <Checkbox id="export-all" checked={exportAll} onCheckedChange={(v) => setExportAll(!!v)} />
+              <Checkbox
+                className="border border-border"
+                id="export-all" checked={exportAll} onCheckedChange={(v) => setExportAll(!!v)} />
               <Label htmlFor="export-all" className="cursor-pointer">Export all words</Label>
             </div>
           )}
@@ -125,7 +127,7 @@ export function ExportDialog({ selectedIds, visibleColumns, section, totalWords 
           {/* Preview Section */}
           <div className="rounded-md bg-muted/50 p-3 space-y-2 text-sm">
             <div className="font-medium text-foreground">Export Preview:</div>
-            
+
             <div className="flex justify-between">
               <span className="text-muted-foreground">Rows:</span>
               <span className="font-medium">{rowsToExport} word{rowsToExport !== 1 ? 's' : ''}</span>
