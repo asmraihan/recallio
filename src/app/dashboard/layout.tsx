@@ -5,6 +5,7 @@ import { useSession } from "next-auth/react";
 import { Sidebar } from "@/components/dashboard/sidebar";
 import { UserNav } from "@/components/dashboard/user-nav";
 import { MobileNav } from "@/components/dashboard/mobile-nav";
+import { GraduationCap } from "lucide-react";
 
 export default function DashboardLayout({
   children,
@@ -29,8 +30,8 @@ export default function DashboardLayout({
     <div className="flex min-h-screen flex-col md:flex-row">
       <Sidebar />
       <div className="flex flex-1 flex-col">
-        <header className="sticky top-0 z-10 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 flex h-[52px] items-center justify-end px-4 md:px-6">
-          {/* <h1 className="text-lg font-semibold">Recallio</h1> */}
+        <header className="sticky top-0 z-10 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 flex h-[52px] items-center justify-between md:justify-end px-4 md:px-6">
+             <GraduationCap className="h-6 w-6  md:hidden" />
           <UserNav user={session?.user} />
         </header>
         <main className="flex-1 space-y-4 p-4 pt-2 md:p-8 md:pt-6 mb-12">

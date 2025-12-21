@@ -540,18 +540,18 @@ export default function LearningSessionPage() {
                   style={{ opacity: leftIndicatorProgress }}
                 >
                   <div className="absolute inset-0 bg-green-500/20" />
-                  <div className="absolute left-1/4 bottom-1/3 -translate-y-1/2 text-green-500 text-lg font-bold">
+                  {/* <div className="absolute left-1/4 bottom-1/3 -translate-y-1/2 text-green-500 text-lg font-bold">
                     Know
-                  </div>
+                  </div> */}
                 </motion.div>
                 <motion.div
                   className="absolute inset-0 pointer-events-none"
                   style={{ opacity: rightIndicatorProgress }}
                 >
                   <div className="absolute inset-0 bg-red-500/20" />
-                  <div className="absolute right-1/4  bottom-1/3 -translate-y-1/2 text-red-500 text-lg font-bold">
+                  {/* <div className="absolute right-1/4  bottom-1/3 -translate-y-1/2 text-red-500 text-lg font-bold">
                     Don&apos;t Know
-                  </div>
+                  </div> */}
                 </motion.div>
 
                 {/* TTS Button */}

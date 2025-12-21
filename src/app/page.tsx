@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import Features from "@/components/landing/features";
 
 export default function Home() {
   return (
@@ -26,11 +27,11 @@ export default function Home() {
       <main className="flex-1 flex flex-col items-center justify-center px-4">
         <section className="w-full flex-1 flex flex-col items-center justify-center">
           <div className="container flex max-w-[64rem] flex-col items-center gap-4 text-center justify-center flex-1 px-4 py-12">
-            <h1 className="font-heading text-3xl sm:text-5xl md:text-6xl lg:text-7xl">
+            <h1 className="max-w-4xl text-4xl font-bold sm:text-5xl md:text-6xl lg:text-7xl leading-tight">
               Master Any Language with{" "}
               <span className="text-primary">Smart Learning</span>
             </h1>
-            <p className="max-w-[42rem] leading-normal text-muted-foreground sm:text-xl sm:leading-8">
+            <p className="max-w-2xl text-lg md:text-xl text-center text-muted-foreground mt-4">
               Learn any language effectively with our intelligent spaced repetition system.
               Create personalized word lists, track your progress, and master vocabulary
               at your own pace.
@@ -47,7 +48,8 @@ export default function Home() {
             </div>
           </div>
         </section>
-        <section className="container space-y-6 py-8 md:py-12 lg:py-24">
+        <Features />
+        <section className="container space-y-6 pb-8 md:pb-12 lg:pb-24">
           <div className="mx-auto grid justify-center gap-4 sm:grid-cols-2 md:max-w-[64rem] md:grid-cols-3">
             <div className="relative overflow-hidden rounded-lg border bg-background p-2">
               <div className="flex h-[180px] flex-col justify-between rounded-md p-6">

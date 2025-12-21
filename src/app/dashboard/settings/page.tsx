@@ -93,7 +93,7 @@ export default function SettingsPage() {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="flex items-center justify-between p-4 border rounded-lg border-destructive/20">
+              <div className="flex flex-col md:flex-row items-end justify-between gap-4 p-4 border rounded-lg border-destructive/20">
                 <div className="space-y-1">
                   <h4 className="text-sm font-semibold">Delete All Learning Sessions</h4>
                   <p className="text-sm text-muted-foreground">
@@ -110,7 +110,7 @@ export default function SettingsPage() {
                 </Button>
               </div>
 
-              <div className="flex items-center justify-between p-4 border rounded-lg border-destructive/20">
+              <div className="flex flex-col md:flex-row items-end justify-between gap-4 p-4 border rounded-lg border-destructive/20">
                 <div className="space-y-1">
                   <h4 className="text-sm font-semibold">Delete All Words</h4>
                   <p className="text-sm text-muted-foreground">
