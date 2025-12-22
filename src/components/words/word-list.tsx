@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, memo } from "react";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Pencil, Trash2, Star, Volume2, ChevronLeft, ChevronRight, Eye, Play, Pause } from "lucide-react";
@@ -468,3 +468,5 @@ export function WordList({ words, rowSelection: rowSelectionProp, onRowSelection
     </div>
   );
 }
+
+export const WordListMemo = memo(WordList);

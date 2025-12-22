@@ -135,6 +135,8 @@ export default function WordsPage() {
     },
     enabled: sectionsLoaded,
     retry: 1,
+    staleTime: 60000, // Keep data fresh for 60 seconds
+    refetchOnWindowFocus: false, // Don't refetch on window focus
   });
 
   const filteredWords = words.filter((word) => {

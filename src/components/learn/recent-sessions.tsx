@@ -6,6 +6,7 @@ import { Loader2 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { useRouter } from "next/navigation";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { memo } from "react";
 
 interface Session {
   id: string;
@@ -29,7 +30,8 @@ export function RecentSessions() {
       if (!response.ok) throw new Error("Failed to fetch recent sessions");
       return response.json();
     },
-       refetchOnWindowFocus: true,
+    refetchOnWindowFocus: false,
+    refetchInterval: 60000, // Only refetch every 60 seconds
   });
 
 
@@ -120,3 +122,5 @@ export function RecentSessions() {
     </ScrollArea>
   );
 }
+
+export const RecentSessionsMemo = memo(RecentSessions);

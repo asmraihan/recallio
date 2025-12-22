@@ -1,22 +1,23 @@
 "use client";
 
-import { useState } from "react";
+import { useState, lazy, Suspense } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useQuery } from "@tanstack/react-query";
-import { Loader2, BookOpen, GraduationCap, RefreshCw, AlertCircle, Star, PenLine } from "lucide-react";
+import { Loader2, BookOpen, GraduationCap, RefreshCw, AlertCircle, PenLine } from "lucide-react";
 import { StartSessionDialog } from "@/components/learn/start-session-dialog";
 import { RecentSessions } from "@/components/learn/recent-sessions";
-import { LearningStats } from "@/components/learn/learning-stats";
+
+const LearningStats = lazy(() => import("@/components/learn/learning-stats").then(mod => ({ default: mod.LearningStats })));
 
 
 export default function LearnPage() {
   const [activeTab, setActiveTab] = useState("overview");
 
 
-  // Fetch learning progress stats
+  // Fetch learning progress stats (essential, load immediately)
   const { data: stats, isLoading: isLoadingStats } = useQuery({
     queryKey: ["learning-stats"],
     queryFn: async () => {
@@ -24,32 +25,15 @@ export default function LearnPage() {
       if (!response.ok) throw new Error("Failed to fetch learning stats");
       return response.json();
     },
+    staleTime: 30000, // Keep data fresh for 30 seconds
+    refetchOnWindowFocus: false, // Don't refetch on window focus
   });
 
   const dueWordsCount = stats?.dueWords ?? 0;
-
-  // Fix streak/accuracy naming for stats
   const learningStreak = stats?.learningStreak ?? 0;
   const accuracy = stats?.averageAccuracy ?? 0;
 
-  // Fetch due words list (not just count)
-  type DueWord = {
-    id: string;
-    germanWord: string;
-    translationOne: string | null;
-    translationTwo: string | null;
-    section: string;
-  };
-  const { data: dueWords, isLoading: isLoadingDueWords } = useQuery<DueWord[]>({
-    queryKey: ["due-words-list"],
-    queryFn: async () => {
-      const response = await fetch("/api/learn/due-words");
-      if (!response.ok) throw new Error("Failed to fetch due words");
-      return response.json();
-    },
-  });
-
-  if (isLoadingStats || isLoadingDueWords) {
+  if (isLoadingStats) {
     return (
       <div className="flex h-[50vh] items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
@@ -217,7 +201,9 @@ export default function LearnPage() {
         </TabsContent>
 
         <TabsContent value="progress">
-          <LearningStats />
+          <Suspense fallback={<div className="flex items-center justify-center h-96"><Loader2 className="h-8 w-8 animate-spin text-muted-foreground" /></div>}>
+            <LearningStats />
+          </Suspense>
         </TabsContent>
 
         <TabsContent value="sessions">

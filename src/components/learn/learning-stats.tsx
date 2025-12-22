@@ -4,6 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Loader2 } from "lucide-react";
+import { memo } from "react";
 
 interface LearningStats {
   totalWords: number;
@@ -27,6 +28,8 @@ export function LearningStats() {
       if (!response.ok) throw new Error("Failed to fetch learning stats");
       return response.json();
     },
+    refetchOnWindowFocus: false,
+    refetchInterval: 60000, // Only refetch every 60 seconds
   });
 
   if (isLoading) {
@@ -136,3 +139,5 @@ export function LearningStats() {
     </div>
   );
 }
+
+export const LearningStatsMemo = memo(LearningStats);

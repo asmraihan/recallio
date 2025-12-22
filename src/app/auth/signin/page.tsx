@@ -42,7 +42,7 @@ export default function SignInPage() {
             Sign in to your account to continue
           </p>
         </div>
-        <Card>
+        <Card className="mx-4 md:mx-0">
           <CardHeader>
             <CardTitle>Sign In</CardTitle>
             <CardDescription>

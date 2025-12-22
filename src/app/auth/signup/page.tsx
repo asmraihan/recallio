@@ -42,7 +42,7 @@ export default function SignUpPage() {
             Enter your details to create your account
           </p>
         </div>
-        <Card>
+     <Card className="mx-4 md:mx-0">
           <CardHeader>
             <CardTitle>Sign Up</CardTitle>
             <CardDescription>

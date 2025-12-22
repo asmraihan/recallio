@@ -466,7 +466,7 @@ export default function LearningSessionPage() {
                     animate={{ rotateX: isFlipped ? 180 : 0, opacity: isFlipped ? 0 : 1 }}
                     transition={{ duration: 0.2, ease: "easeInOut" }}
                   >
-                    <CardContent className="p-6 flex flex-col items-center justify-center gap-10 min-h-[280px] md:min-h-[340px] lg:min-h-[400px]">
+                    <CardContent className="mt-8 md:mt-0 p-6 flex flex-col items-center justify-center gap-10 min-h-[280px] md:min-h-[340px] lg:min-h-[400px]">
                       <div className="text-2xl font-bold">
                         {direction === "german_to_english" && currentCard.word.germanWord}
                         {direction === "english_to_german" && currentCard.word.translationOne}

@@ -304,7 +304,7 @@ export const MultiSelect = React.forwardRef<
                                                 : "opacity-50 [&_svg]:invisible"
                                         )}
                                     >
-                                        <CheckIcon className="h-4 w-4" />
+                                        <CheckIcon className="h-4 w-4 text-white" />
                                     </div>
                                     <span>(Select All)</span>
                                 </CommandItem>
@@ -324,7 +324,7 @@ export const MultiSelect = React.forwardRef<
                                                         : "opacity-50 [&_svg]:invisible"
                                                 )}
                                             >
-                                                <CheckIcon className="h-4 w-4" />
+                                                <CheckIcon className="h-4 w-4 text-white" />
                                             </div>
                                             {option.icon && (
                                                 <option.icon className="mr-2 h-4 w-4 text-muted-foreground" />
