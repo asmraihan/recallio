@@ -8,6 +8,7 @@ import { Loader2, Star, Undo, Volume2 } from "lucide-react";
 import { toast } from "sonner";
 import clsx from "clsx";
 import { motion, AnimatePresence, useMotionValue, useTransform } from "framer-motion";
+import { useTranslation } from "@/hooks/use-translation-cache";
 
 interface Word {
   id: string;
@@ -51,6 +52,13 @@ export default function LearningSessionPage() {
 
   const leftIndicatorProgress = useTransform(x, [-300, 0], [1, 0]);
   const rightIndicatorProgress = useTransform(x, [0, 300], [0, 1]);
+
+  // Hook must be called at top level before any early returns
+  // Note: we pass null when cards are empty to avoid hook order violations
+  const { translation: exampleSentenceTranslation, loading: sentenceTranslationLoading } = useTranslation(
+    cards.length > 0 && currentIndex < cards.length ? cards[currentIndex]?.word.exampleSentence || null : null,
+    { targetLanguage: 'en' }
+  );
 
   // TTS state
   const [ttsLoading, setTtsLoading] = useState(false);
@@ -458,7 +466,7 @@ export default function LearningSessionPage() {
                     animate={{ rotateX: isFlipped ? 180 : 0, opacity: isFlipped ? 0 : 1 }}
                     transition={{ duration: 0.2, ease: "easeInOut" }}
                   >
-                    <CardContent className="p-6 flex items-center justify-center min-h-[280px] md:min-h-[340px] lg:min-h-[400px]">
+                    <CardContent className="p-6 flex flex-col items-center justify-center gap-10 min-h-[280px] md:min-h-[340px] lg:min-h-[400px]">
                       <div className="text-2xl font-bold">
                         {direction === "german_to_english" && currentCard.word.germanWord}
                         {direction === "english_to_german" && currentCard.word.translationOne}
@@ -466,9 +474,21 @@ export default function LearningSessionPage() {
                         {direction === "bangla_to_german" && currentCard.word.translationTwo}
                       </div>
 
-                      <div className="absolute bottom-4 text-sm text-gray-500">
+                      <div className="text-sm text-gray-500 flex flex-col gap-2">
                         {currentCard.word.exampleSentence && (
-                          <em>"{currentCard.word.exampleSentence}"</em>
+                          <>
+                            <em>"{currentCard.word.exampleSentence}"</em>
+                            {exampleSentenceTranslation && (
+                              <div className="text-xs text-muted-foreground italic border-l-2 border-muted pl-2">
+                                {exampleSentenceTranslation}
+                              </div>
+                            )}
+                            {sentenceTranslationLoading && (
+                              <div className="text-xs text-muted-foreground">
+                                Translating...
+                              </div>
+                            )}
+                          </>
                         )}
                       </div>
                     </CardContent>

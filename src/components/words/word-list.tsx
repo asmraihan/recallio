@@ -13,6 +13,7 @@ import {
   flexRender,
   ColumnDef,
 } from "@tanstack/react-table";
+import { useTranslation } from "@/hooks/use-translation-cache";
 
 // Match the database schema
 interface Word {
@@ -133,68 +134,12 @@ export function WordList({ words, rowSelection: rowSelectionProp, onRowSelection
   const handlePrev = () => setViewIndex(i => (i !== null && i > 0 ? i - 1 : i));
   const handleNext = () => setViewIndex(i => (i !== null && i < words.length - 1 ? i + 1 : i));
 
-  // State for sentence translation
-  const [sentenceTranslation, setSentenceTranslation] = useState<string | null>(null);
-  const [translationLoading, setTranslationLoading] = useState(false);
-
-  // Translate sentence using browser AI API when viewing a word
-  useEffect(() => {
-    if (viewIndex === null) {
-      setSentenceTranslation(null);
-      return;
-    }
-
-    const sentence = words[viewIndex]?.exampleSentence;
-    if (!sentence) {
-      setSentenceTranslation(null);
-      return;
-    }
-
-    const translateSentence = async () => {
-      setTranslationLoading(true);
-      try {
-        // Check if Translator API is available in the browser
-        if (typeof (window as any).Translator === "undefined") {
-          console.log("Translator API not available in this browser");
-          setSentenceTranslation(null);
-          return;
-        }
-
-        // Check availability of English to German translation
-        const availability = await (window as any).Translator.availability({
-          sourceLanguage: "en",
-          targetLanguage: "de",
-        });
-
-        if (availability === "unavailable") {
-          console.log("Translation model not available");
-          setSentenceTranslation(null);
-          return;
-        }
-
-        // Create translator instance (may download model if needed)
-        const translator = await (window as any).Translator.create({
-          sourceLanguage: "de",
-          targetLanguage: "en",
-        });
-
-        // Translate the sentence
-        const translation = await translator.translate(sentence);
-        console.log("Translation result:", translation);
-        setSentenceTranslation(translation);
-
-        // Clean up resources
-        translator.destroy();
-      } catch (error) {
-        console.log("Translation failed:", error);
-        setSentenceTranslation(null);
-      } finally {
-        setTranslationLoading(false);
-      }
-    };
-
-    translateSentence();
-  }, [viewIndex, words]);
+  // Use the new translation cache hook for the sentence
+  const currentWord = viewIndex !== null ? words[viewIndex] : null;
+  const { translation: sentenceTranslation, loading: translationLoading } = useTranslation(
+    currentWord?.exampleSentence || null,
+    { targetLanguage: 'en' }
+  );
 
   const columns = useMemo<ColumnDef<Word>[]>(() => [
     {
