@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useOptimistic, useTransition } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -108,6 +108,13 @@ export default function LearningSessionPage() {
       setTtsLoading(false);
     }
   }
+
+  // Optimistic map for `important` per-word
+  const [optimisticImportant, dispatchOptimistic] = useOptimistic<Record<string, boolean>, { type: "set"; id: string; value: boolean }>(
+    {},
+    (state, action) => ({ ...state, [action.id]: action.value })
+  );
+  const [isPending, startTransition] = useTransition();
 
   useEffect(() => {
     async function fetchSession() {
@@ -233,36 +240,35 @@ export default function LearningSessionPage() {
   };
 
   const handleMarkImportant = async (word: Word) => {
-    const newValue = !word.important;
+    const prevValue = !!word.important;
+    const newValue = !prevValue;
+
+    // snapshot previous state to rollback if needed
+    const prevWords = words;
+    const prevCards = cards;
+
+    // apply optimistic updates
+    startTransition(() => {
+      dispatchOptimistic({ type: "set", id: word.id, value: newValue });
+      setWords((w) => w.map(x => x.id === word.id ? { ...x, important: newValue } : x));
+      setCards((c) => c.map(card => card.word.id === word.id ? { ...card, word: { ...card.word, important: newValue } } : card));
+    });
+
     try {
-      await fetch(`/api/learn/words/${word.id}/important`, {
+      const res = await fetch(`/api/learn/words/${word.id}/important`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ important: newValue }),
       });
+      if (!res.ok) throw new Error("Failed to update important status");
       toast.success(newValue ? "Marked as important" : "Unmarked as important");
-      // Refetch session data to update important status
-      if (sessionId) {
-        setLoading(true);
-        setError(null);
-        try {
-          const res = await fetch(`/api/learn/sessions/${sessionId}`);
-          if (!res.ok) throw new Error("Failed to fetch session data");
-          const data = await res.json();
-          const fetchedWords = data.words || [];
-          setWords(fetchedWords);
-          setCards(fetchedWords.map((word: Word & { answeredAt?: string | null, isCorrect?: boolean | null }) => ({
-            word,
-            answered: !!word.answeredAt,
-            isCorrect: word.isCorrect ?? undefined
-          })));
-        } catch (err: unknown) {
-          setError(err instanceof Error ? err.message : "Unknown error");
-        } finally {
-          setLoading(false);
-        }
-      }
-    } catch {
+    } catch (err) {
+      // rollback optimistic updates
+      startTransition(() => {
+        dispatchOptimistic({ type: "set", id: word.id, value: prevValue });
+        setWords(prevWords);
+        setCards(prevCards);
+      });
       toast.error("Failed to update important status");
     }
   };
@@ -406,11 +412,11 @@ export default function LearningSessionPage() {
                   }}
                   className="absolute top-4 right-4 z-10 cursor-pointer"
                 >
-                  <Star
-                    className={clsx(
-                      "h-6 w-6 transition-colors",
-                      currentCard.word.important ? "fill-yellow-400 text-yellow-400" : "text-gray-300"
-                    )}
+                    <Star
+                      className={clsx(
+                        "h-6 w-6 transition-colors",
+                        (optimisticImportant[currentCard.word.id] ?? currentCard.word.important) ? "fill-yellow-400 text-yellow-400" : "text-gray-300"
+                      )}
                   />
                 </button>
                 <div className="absolute top-4 left-4 flex gap-2 min-w-[110px]">
@@ -582,7 +588,7 @@ export default function LearningSessionPage() {
                     onClick={e => {
                       e.stopPropagation();
                       let text = "";
-                      text = currentCard.word.germanWord + ", ." + currentCard.word.exampleSentence;
+                      text = currentCard.word.germanWord + " , " + currentCard.word.exampleSentence;
                       playTTS(text);
                     }}
                     title="Play German TTS"

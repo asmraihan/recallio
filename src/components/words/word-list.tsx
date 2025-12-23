@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo, memo } from "react";
+import { useState, useEffect, useMemo, memo, useOptimistic, useTransition } from "react";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Pencil, Trash2, Star, Volume2, ChevronLeft, ChevronRight, Eye, Play, Pause } from "lucide-react";
@@ -40,6 +40,12 @@ interface WordListProps {
 
 export function WordList({ words, rowSelection: rowSelectionProp, onRowSelectionChange, columnVisibility: columnVisibilityProp, onColumnVisibilityChange }: WordListProps) {
   const queryClient = useQueryClient();
+  const [optimisticImportant, dispatchOptimistic] = useOptimistic<Record<string, boolean>, { type: "set"; id: string; value: boolean }>(
+    {},
+    (state, action) => ({ ...state, [action.id]: action.value })
+  );
+  const [isPending, startTransition] = useTransition();
+  const [pendingIds, setPendingIds] = useState<Record<string, boolean>>({});
   const [isDeleting, setIsDeleting] = useState<string | null>(null);
   const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
   const [viewIndex, setViewIndex] = useState<number | null>(null);
@@ -82,22 +88,48 @@ export function WordList({ words, rowSelection: rowSelectionProp, onRowSelection
   async function handleMarkImportant(wordId: string) {
     const word = words.find(w => w.id === wordId);
     if (!word) return;
-    const newValue = !word.important;
+    const prevValue = !!word.important;
+    const newValue = !prevValue;
+
+    // snapshot all 'words' queries
+    const prevList = queryClient.getQueriesData({ queryKey: ["words"], exact: false }) as Array<[unknown, Word[] | undefined]>;
+
+    // optimistic update across all 'words' queries
+    startTransition(() => {
+      dispatchOptimistic({ type: "set", id: wordId, value: newValue });
+      const matches = queryClient.getQueriesData({ queryKey: ["words"], exact: false }) as Array<[unknown, Word[] | undefined]>;
+      for (const [key, data] of matches) {
+        if (!data) continue;
+        const arr = data as Word[];
+        const next = arr.map(w => (w.id === wordId ? { ...w, important: newValue } : w));
+        queryClient.setQueryData(key as any, next as any);
+      }
+    });
+    setPendingIds(prev => ({ ...prev, [wordId]: true }));
+
     try {
-      await fetch(`/api/learn/words/${wordId}/important`, {
+      const res = await fetch(`/api/learn/words/${wordId}/important`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ important: newValue }),
       });
+      if (!res.ok) throw new Error("Failed to update important status");
       toast.success(newValue ? "Marked as important" : "Unmarked as important");
-      // Refetch words so UI updates immediately
-      await queryClient.invalidateQueries({ queryKey: ["words"] });
-    } catch {
+    } catch (err) {
+      // rollback
+      startTransition(() => {
+        for (const [key, data] of prevList) {
+          queryClient.setQueryData(key as any, data as any);
+        }
+        dispatchOptimistic({ type: "set", id: wordId, value: prevValue });
+      });
       toast.error("Failed to update important status");
+    } finally {
+      setPendingIds(prev => ({ ...prev, [wordId]: false }));
     }
   }
 
-  async function playTTS(text: string) {
+  async function playTTS(text: string, onEnded?: () => void) {
     setTtsLoading(true);
     try {
       const response = await fetch('/api/tts', {
@@ -118,6 +150,7 @@ export function WordList({ words, rowSelection: rowSelectionProp, onRowSelection
       }
 
       const audio = new Audio(`data:audio/mp3;base64,${data.audio}`);
+      audio.onended = () => onEnded?.();
       setTtsAudio(audio);
       await audio.play();
     } catch {
@@ -130,9 +163,27 @@ export function WordList({ words, rowSelection: rowSelectionProp, onRowSelection
   const handleViewClose = () => {
     setViewIndex(null);
     setIsAutoplayOn(false);
+    if (ttsAudio) {
+      ttsAudio.pause();
+      setTtsAudio(null);
+    }
   };
   const handlePrev = () => setViewIndex(i => (i !== null && i > 0 ? i - 1 : i));
   const handleNext = () => setViewIndex(i => (i !== null && i < words.length - 1 ? i + 1 : i));
+
+  // Autoplay functionality
+  useEffect(() => {
+    let timer: NodeJS.Timeout;
+    if (isAutoplayOn && viewIndex !== null && viewIndex < words.length - 1) {
+      
+      timer = setTimeout(() => {
+        handleNext();
+      }, 10000); // 10 seconds delay
+    }
+    return () => {
+      if (timer) clearTimeout(timer);
+    };
+  }, [isAutoplayOn, viewIndex]);
 
   // Use the new translation cache hook for the sentence
   const currentWord = viewIndex !== null ? words[viewIndex] : null;
@@ -363,12 +414,13 @@ export function WordList({ words, rowSelection: rowSelectionProp, onRowSelection
                   <button
                     onClick={() => handleMarkImportant(words[viewIndex].id)}
                     className="ml-1"
-                    title={words[viewIndex] && words[viewIndex].important ? "Unmark as important" : "Mark as important"}
+                    title={(optimisticImportant[words[viewIndex].id] ?? words[viewIndex].important) ? "Unmark as important" : "Mark as important"}
+                    disabled={!!pendingIds[words[viewIndex].id]}
                   >
-                    {words[viewIndex] && words[viewIndex].important ? (
-                      <Star className="h-5 w-5 text-yellow-400 fill-yellow-400" />
+                    {(optimisticImportant[words[viewIndex].id] ?? words[viewIndex].important) ? (
+                      <Star className={pendingIds[words[viewIndex].id] ? "h-5 w-5 text-yellow-400 fill-yellow-400 opacity-60 animate-pulse" : "h-5 w-5 text-yellow-400 fill-yellow-400"} />
                     ) : (
-                      <Star className="h-5 w-5 text-gray-300" />
+                      <Star className={pendingIds[words[viewIndex].id] ? "h-5 w-5 text-gray-300 opacity-60 animate-pulse" : "h-5 w-5 text-gray-300"} />
                     )}
                   </button>
                 </div>
