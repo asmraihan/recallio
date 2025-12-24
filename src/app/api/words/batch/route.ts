@@ -50,13 +50,14 @@ export async function POST(req: Request) {
     const { words: wordsToAdd } = result.data;
     // console.log(`Attempting to add ${wordsToAdd.length} words for user ${session.user.id}`);
 
-    // Get all existing words for this user (regardless of section)
+    // Get all existing words for this user (match by section + germanWord)
     const existing = await db.select({
       germanWord: words.germanWord,
+      section: words.section,
     }).from(words)
       .where(eq(words.createdBy, session.user.id));
-    const existingSet = new Set(existing.map(e => e.germanWord));
-    const filteredWords = wordsToAdd.filter(w => !existingSet.has(w.germanWord));
+    const existingSet = new Set(existing.map((e: any) => `${e.section}|||${e.germanWord}`));
+    const filteredWords = wordsToAdd.filter(w => !existingSet.has(`${w.section}|||${w.germanWord}`));
     const skippedCount = wordsToAdd.length - filteredWords.length;
 
     if (filteredWords.length === 0) {

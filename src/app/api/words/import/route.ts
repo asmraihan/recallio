@@ -57,13 +57,14 @@ export async function POST(req: Request) {
       };
     });
 
-    // Remove duplicates: check for existing words for this user (same germanWord, regardless of section)
+    // Remove duplicates: check for existing words for this user (same germanWord AND same section)
     const existing = await db.select({
       germanWord: words.germanWord,
+      section: words.section,
     }).from(words)
       .where(eq(words.createdBy, session.user.id));
-    const existingSet = new Set(existing.map((e: any) => e.germanWord));
-    const filteredWords = validatedWords.filter((w: any) => !existingSet.has(w.germanWord));
+    const existingSet = new Set(existing.map((e: any) => `${e.section}|||${e.germanWord}`));
+    const filteredWords = validatedWords.filter((w: any) => !existingSet.has(`${w.section}|||${w.germanWord}`));
     const skippedCount = validatedWords.length - filteredWords.length;
 
     // Insert words in batches of 100

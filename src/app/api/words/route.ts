@@ -31,15 +31,16 @@ export async function POST(req: Request) {
     const body = await req.json();
     const validatedData = wordSchema.parse(body);
 
-    // Check for duplicate (same germanWord for this user, regardless of section)
+    // Check for duplicate (same germanWord AND same section for this user)
     const existing = await db.select().from(words).where(
       and(
         eq(words.createdBy, session.user.id),
-        eq(words.germanWord, validatedData.germanWord)
+        eq(words.germanWord, validatedData.germanWord),
+        eq(words.section, validatedData.section)
       )
     );
     if (existing.length > 0) {
-      return new NextResponse(JSON.stringify({ error: "This word already exists in your collection." }), {
+      return new NextResponse(JSON.stringify({ error: "This word already exists in this section." }), {
         status: 409,
         headers: { "Content-Type": "application/json" }
       });
