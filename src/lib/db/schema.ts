@@ -7,15 +7,18 @@ export const users = pgTable('users', {
   name: text('name'),
   password: text('password'),
   role: text('role', { enum: ['admin', 'moderator', 'user'] }).default('user'),
+  // Language preferences
+  mainLanguage: text('main_language').notNull().default('German'),
+  translationLanguages: jsonb('translation_languages').default(['English', 'Bangla']),
   createdAt: timestamp('created_at').defaultNow(),
   updatedAt: timestamp('updated_at').defaultNow(),
 });
 
 export const words = pgTable('words', {
   id: uuid('id').defaultRandom().primaryKey(),
-  germanWord: text('german_word').notNull(),
-  translationOne: text('translation_one'),
-  translationTwo: text('translation_two'),
+  mainWord: text('main_word').notNull(),
+  translation1: text('translation_1'),
+  translation2: text('translation_2'),
   exampleSentence: text('example_sentence'),
   notes: text('notes'),
   section: text('section').notNull(),
@@ -50,8 +53,8 @@ export const learningProgress = pgTable('learning_progress', {
   incorrectAttempts: integer('incorrect_attempts').notNull().default(0),
   // Last review date
   lastReviewedAt: timestamp('last_reviewed_at'),
-  // Learning direction preferences (e.g., "german_to_english", "english_to_german")
-  preferredDirection: text('preferred_direction').notNull().default('german_to_english'),
+  // Learning direction preferences (dynamically set based on user's languages)
+  preferredDirection: text('preferred_direction').notNull().default('main_to_trans1'),
   // important: boolean('important').notNull().default(false),
   createdAt: timestamp('created_at').defaultNow(),
   updatedAt: timestamp('updated_at').defaultNow(),

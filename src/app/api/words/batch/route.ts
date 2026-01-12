@@ -9,9 +9,9 @@ import { eq } from "drizzle-orm";
 const batchWordSchema = z.object({
   words: z.array(
     z.object({
-      germanWord: z.string().min(1, "German word is required"),
-      translationOne: z.string().nullable(),
-      translationTwo: z.string().nullable(),
+      mainWord: z.string().min(1, "Main word is required"),
+      translation1: z.string().nullable(),
+      translation2: z.string().nullable(),
       exampleSentence: z.string().nullable(),
       section: z.string().min(1, "Section is required"),
       createdAt: z.date().optional(),
@@ -50,14 +50,14 @@ export async function POST(req: Request) {
     const { words: wordsToAdd } = result.data;
     // console.log(`Attempting to add ${wordsToAdd.length} words for user ${session.user.id}`);
 
-    // Get all existing words for this user (match by section + germanWord)
+    // Get all existing words for this user (match by section + mainWord)
     const existing = await db.select({
-      germanWord: words.germanWord,
+      mainWord: words.mainWord,
       section: words.section,
     }).from(words)
       .where(eq(words.createdBy, session.user.id));
-    const existingSet = new Set(existing.map((e: any) => `${e.section}|||${e.germanWord}`));
-    const filteredWords = wordsToAdd.filter(w => !existingSet.has(`${w.section}|||${w.germanWord}`));
+    const existingSet = new Set(existing.map((e: any) => `${e.section}|||${e.mainWord}`));
+    const filteredWords = wordsToAdd.filter(w => !existingSet.has(`${w.section}|||${w.mainWord}`));
     const skippedCount = wordsToAdd.length - filteredWords.length;
 
     if (filteredWords.length === 0) {
@@ -82,7 +82,7 @@ export async function POST(req: Request) {
       )
       .returning({
         id: words.id,
-        germanWord: words.germanWord,
+        mainWord: words.mainWord,
         createdAt: words.createdAt
       });
 

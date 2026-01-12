@@ -12,9 +12,9 @@ import { useTranslation } from "@/hooks/use-translation-cache";
 
 interface Word {
   id: string;
-  germanWord: string;
-  translationOne: string | null;
-  translationTwo: string | null;
+  mainWord: string;
+  translation1: string | null;
+  translation2: string | null;
   section: string;
   notes: string | null;
   important?: boolean;
@@ -43,7 +43,7 @@ export default function LearningSessionPage() {
   const [showContinueHint, setShowContinueHint] = useState(false);
   const [dragFeedback, setDragFeedback] = useState<null | 'plus' | 'minus'>(null);
   const [lastUnansweredIndex, setLastUnansweredIndex] = useState<number>(0);
-  const [direction, setDirection] = useState("german_to_english");
+  const [direction, setDirection] = useState("main_to_trans1");
   const [sessionType, setSessionType] = useState<string>("");
   const [sections, setSections] = useState<number[]>([]);
 
@@ -128,7 +128,9 @@ export default function LearningSessionPage() {
         const data = await res.json();
         const fetchedWords = data.words || [];
         // console.log(fetchedWords , "fetchedWords");
-        setDirection(data.session?.direction || "german_to_english");
+        // Use direction from session or default, will be in new format from API
+        const sessionDirection = data.session?.direction || "main_to_trans1";
+        setDirection(sessionDirection);
         setSessionType(data.session?.sessionType || "");
         setSections(data.session?.sections || []);
         setWords(fetchedWords);
@@ -341,6 +343,7 @@ export default function LearningSessionPage() {
   }
 
   const currentCard = cards[currentIndex];
+  console.log(currentCard)
 
   return (
     <div className="flex flex-col items-center justify-center p-4 relative overflow-hidden">
@@ -474,10 +477,10 @@ export default function LearningSessionPage() {
                   >
                     <CardContent className="mt-8 md:mt-0 p-6 flex flex-col items-center justify-center gap-10 min-h-[280px] md:min-h-[340px] lg:min-h-[400px]">
                       <div className="text-2xl font-bold">
-                        {direction === "german_to_english" && currentCard.word.germanWord}
-                        {direction === "english_to_german" && currentCard.word.translationOne}
-                        {direction === "german_to_bangla" && currentCard.word.germanWord}
-                        {direction === "bangla_to_german" && currentCard.word.translationTwo}
+                        {direction === "main_to_trans1" && currentCard.word.mainWord}
+                        {direction === "trans1_to_main" && currentCard.word.translation1}
+                        {direction === "main_to_trans2" && currentCard.word.mainWord}
+                        {direction === "trans2_to_main" && currentCard.word.translation2}
                       </div>
 
                       <div className="text-sm text-gray-500 flex flex-col gap-2">
@@ -512,44 +515,44 @@ export default function LearningSessionPage() {
                     transition={{ duration: 0.2, ease: "easeInOut" }}
                   >
                     <CardContent className="p-6 flex flex-col items-center justify-center min-h-[280px] md:min-h-[340px] lg:min-h-[400px]">
-                      {direction === "german_to_english" && (
+                      {direction === "main_to_trans1" && (
                         <>
-                          <p className="text-2xl font-bold mb-4">{currentCard.word.translationOne}</p>
-                          {currentCard.word.translationTwo && (
-                            <p className="text-lg text-gray-600">{currentCard.word.translationTwo}</p>
+                          <p className="text-2xl font-bold mb-4">{currentCard.word.translation1}</p>
+                          {currentCard.word.translation2 && (
+                            <p className="text-lg text-gray-600">{currentCard.word.translation2}</p>
                           )}
                           {currentCard.word.notes && (
                             <p className="text-sm text-gray-500 mt-8 text-center">N.B. {currentCard.word.notes}</p>
                           )}
                         </>
                       )}
-                      {direction === "english_to_german" && (
+                      {direction === "trans1_to_main" && (
                         <>
-                          <p className="text-2xl font-bold mb-4">{currentCard.word.germanWord}</p>
-                          {currentCard.word.translationTwo && (
-                            <p className="text-lg text-gray-600">{currentCard.word.translationTwo}</p>
+                          <p className="text-2xl font-bold mb-4">{currentCard.word.mainWord}</p>
+                          {currentCard.word.translation2 && (
+                            <p className="text-lg text-gray-600">{currentCard.word.translation2}</p>
                           )}
                           {currentCard.word.notes && (
                             <p className="text-sm text-gray-500 mt-8 text-center">N.B. {currentCard.word.notes}</p>
                           )}
                         </>
                       )}
-                      {direction === "german_to_bangla" && (
+                      {direction === "main_to_trans2" && (
                         <>
-                          <p className="text-2xl font-bold mb-4">{currentCard.word.translationTwo}</p>
-                          {currentCard.word.translationOne && (
-                            <p className="text-lg text-gray-600">{currentCard.word.translationOne}</p>
+                          <p className="text-2xl font-bold mb-4">{currentCard.word.translation2}</p>
+                          {currentCard.word.translation1 && (
+                            <p className="text-lg text-gray-600">{currentCard.word.translation1}</p>
                           )}
                           {currentCard.word.notes && (
                             <p className="text-sm text-gray-500 mt-8 text-center">N.B. {currentCard.word.notes}</p>
                           )}
                         </>
                       )}
-                      {direction === "bangla_to_german" && (
+                      {direction === "trans2_to_main" && (
                         <>
-                          <p className="text-2xl font-bold mb-4">{currentCard.word.germanWord}</p>
-                          {currentCard.word.translationOne && (
-                            <p className="text-lg text-gray-600">{currentCard.word.translationOne}</p>
+                          <p className="text-2xl font-bold mb-4">{currentCard.word.mainWord}</p>
+                          {currentCard.word.translation1 && (
+                            <p className="text-lg text-gray-600">{currentCard.word.translation1}</p>
                           )}
                           {currentCard.word.notes && (
                             <p className="text-sm text-gray-500 mt-8 text-center">N.B. {currentCard.word.notes}</p>
@@ -580,18 +583,18 @@ export default function LearningSessionPage() {
                   </div> */}
                 </motion.div>
 
-                {/* TTS Button */}
-                {(direction === "german_to_english" || direction === "german_to_bangla" || direction === "bangla_to_german" || direction === "english_to_german") && (
+                {/* TTS Button - show for any valid direction */}
+                {(direction === "main_to_trans1" || direction === "trans1_to_main" || direction === "main_to_trans2" || direction === "trans2_to_main") && (
                   <button
                     className="absolute bottom-4 right-4 z-20 bg-white/90 rounded-full p-2 shadow-lg border hover:bg-primary/10 transition"
                     disabled={ttsLoading}
                     onClick={e => {
                       e.stopPropagation();
                       let text = "";
-                      text = currentCard.word.germanWord + " , " + currentCard.word.exampleSentence;
+                      text = currentCard.word.mainWord + " , " + currentCard.word.exampleSentence;
                       playTTS(text);
                     }}
-                    title="Play German TTS"
+                    title="Play word TTS"
                   >
                     <Volume2 className={clsx("h-6 w-6", ttsLoading && "animate-pulse")} />
                   </button>

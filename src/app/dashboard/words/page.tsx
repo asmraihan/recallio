@@ -22,9 +22,9 @@ import { useDebounce } from "@/hooks/use-debounce";
 
 interface Word {
   id: string;
-  germanWord: string;
-  translationOne: string | null;
-  translationTwo: string | null;
+  mainWord: string;
+  translation1: string | null;
+  translation2: string | null;
   exampleSentence: string | null;
   notes: string | null;
   section: string;
@@ -35,9 +35,9 @@ interface Word {
 
 interface WordResponse {
   id: string;
-  germanWord: string;
-  translationOne: string | null;
-  translationTwo: string | null;
+  mainWord: string;
+  translation1: string | null;
+  translation2: string | null;
   exampleSentence: string | null;
   notes: string | null;
   section: string;
@@ -59,9 +59,9 @@ export default function WordsPage() {
   const debouncedSearch = useDebounce(searchInput, 300);
   const [rowSelection, setRowSelection] = useState<Record<string, boolean>>({});
   const [columnVisibility, setColumnVisibility] = useState<Record<string, boolean>>({
-    germanWord: true,
-    translationOne: true,
-    translationTwo: true,
+    mainWord: true,
+    translation1: true,
+    translation2: true,
     section: true,
     exampleSentence: true,
     actions: true,
@@ -142,9 +142,9 @@ export default function WordsPage() {
   const filteredWords = words.filter((word) => {
     if (!debouncedSearch) return true;
     const matchesSearch =
-      word.germanWord.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
-      (word.translationOne?.toLowerCase().includes(debouncedSearch.toLowerCase()) ?? false) ||
-      (word.translationTwo?.toLowerCase().includes(debouncedSearch.toLowerCase()) ?? false);
+      word.mainWord.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
+      (word.translation1?.toLowerCase().includes(debouncedSearch.toLowerCase()) ?? false) ||
+      (word.translation2?.toLowerCase().includes(debouncedSearch.toLowerCase()) ?? false);
     return matchesSearch;
   });
 
@@ -237,9 +237,9 @@ export default function WordsPage() {
               <DropdownMenuLabel>Toggle columns</DropdownMenuLabel>
               <DropdownMenuSeparator />
               {[
-                { id: "germanWord", label: "German" },
-                { id: "translationOne", label: "English" },
-                { id: "translationTwo", label: "Bangla" },
+                { id: "mainWord", label: "Main Word" },
+                { id: "translation1", label: "Translation 1" },
+                { id: "translation2", label: "Translation 2" },
                 { id: "section", label: "Section" },
                 { id: "exampleSentence", label: "Sentence" },
                 { id: "actions", label: "Actions" },

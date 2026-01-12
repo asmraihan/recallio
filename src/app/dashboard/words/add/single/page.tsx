@@ -20,7 +20,7 @@ export default function AddSingleWordPage() {
         <CardHeader>
           <CardTitle>Word Details</CardTitle>
           <CardDescription>
-            Enter the word in German, English, and Bangla, along with any additional information
+            Enter the word in your primary language, along with translations and additional information based on your language preferences
           </CardDescription>
         </CardHeader>
         <CardContent>

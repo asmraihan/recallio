@@ -7,9 +7,9 @@ import { eq, inArray, and } from "drizzle-orm";
 import { Parser } from "json2csv";
 
 const defaultFields = [
-  "germanWord",
-  "translationOne",
-  "translationTwo",
+  "mainWord",
+  "translation1",
+  "translation2",
   "exampleSentence",
   "notes",
   "section",

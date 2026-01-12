@@ -8,9 +8,9 @@ import { z } from "zod";
 import { eq } from "drizzle-orm";
 
 const wordSchema = z.object({
-  germanWord: z.string().min(1, "German word is required"),
-  translationOne: z.string().nullable(),
-  translationTwo: z.string().nullable(),
+  mainWord: z.string().min(1, "Main word is required"),
+  translation1: z.string().nullable(),
+  translation2: z.string().nullable(),
   exampleSentence: z.string().nullable(),
   notes: z.string().nullable(),
   section: z.string().min(1, "Section is required"),
@@ -57,14 +57,14 @@ export async function POST(req: Request) {
       };
     });
 
-    // Remove duplicates: check for existing words for this user (same germanWord AND same section)
+    // Remove duplicates: check for existing words for this user (same mainWord AND same section)
     const existing = await db.select({
-      germanWord: words.germanWord,
+      mainWord: words.mainWord,
       section: words.section,
     }).from(words)
       .where(eq(words.createdBy, session.user.id));
-    const existingSet = new Set(existing.map((e: any) => `${e.section}|||${e.germanWord}`));
-    const filteredWords = validatedWords.filter((w: any) => !existingSet.has(`${w.section}|||${w.germanWord}`));
+    const existingSet = new Set(existing.map((e: any) => `${e.section}|||${e.mainWord}`));
+    const filteredWords = validatedWords.filter((w: any) => !existingSet.has(`${w.section}|||${w.mainWord}`));
     const skippedCount = validatedWords.length - filteredWords.length;
 
     // Insert words in batches of 100

@@ -26,7 +26,8 @@ export async function POST(req: Request, context: { params: Promise<{ sessionId:
       .select({ direction: learningSessions.direction })
       .from(learningSessions)
       .where(eq(learningSessions.id, sessionId));
-    const preferredDirection = learningSession?.direction || "german_to_english";
+    // Use generic default direction (main_to_trans1) instead of hardcoded language
+    const preferredDirection = learningSession?.direction || "main_to_trans1";
 
     // Get or create learning_progress row
     const [progress] = await db

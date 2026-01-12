@@ -35,9 +35,9 @@ export default function ExportImportPage() {
               <div>
                 <h3 className="text-lg font-medium mb-2">What&apos;s Included</h3>
                 <ul className="text-sm space-y-2 list-disc list-inside text-muted-foreground">
-                  <li>German words</li>
-                  <li>English translations</li>
-                  <li>Bangla translations</li>
+                  <li>Main word (in your primary language)</li>
+                  <li>Translation 1 (first translation language)</li>
+                  <li>Translation 2 (second translation language)</li>
                   <li>Example sentences</li>
                   <li>Notes</li>
                   <li>Section numbers</li>
@@ -78,9 +78,9 @@ export default function ExportImportPage() {
                 <ul className="text-sm space-y-2 list-disc list-inside text-muted-foreground">
                   <li>CSV format with UTF-8 encoding</li>
                   <li>Maximum 100 words per import</li>
-                  <li>Required columns: germanWord, section</li>
-                  <li>Optional columns: translationOne, translationTwo, exampleSentence, notes</li>
-                  <li>At least one translation (English or Bangla) is required</li>
+                  <li>Required columns: mainWord, section</li>
+                  <li>Optional columns: translation1, translation2, exampleSentence, notes</li>
+                  <li>At least one translation is required</li>
                 </ul>
               </div>
 
@@ -88,9 +88,9 @@ export default function ExportImportPage() {
                 <h3 className="text-lg font-medium mb-2">Format Example</h3>
                 <div className="bg-muted p-3 rounded-md">
                   <code className="text-sm">
-                    germanWord,translationOne,
+                    mainWord,translation1,
                     <br />
-                    translationTwo,section<br />
+                    translation2,section<br />
                     Haus,house,বাড়ি,1<br />
                     Brot,bread,রুটি,1
                   </code>

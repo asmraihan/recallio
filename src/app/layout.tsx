@@ -9,7 +9,7 @@ const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
   title: "Recallio - Language Learning Platform",
-  description: "Learn German with English and Bangla translations",
+  description: "Master any language with spaced repetition and personalized learning",
 };
 
 export default function RootLayout({

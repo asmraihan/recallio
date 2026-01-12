@@ -7,15 +7,15 @@ import { eq, and } from "drizzle-orm";
 import { z } from "zod";
 
 const wordSchema = z.object({
-  germanWord: z.string().min(1, "German word is required"),
-  translationOne: z.string().optional(),
-  translationTwo: z.string().optional(),
+  mainWord: z.string().min(1, "Main word is required"),
+  translation1: z.string().optional(),
+  translation2: z.string().optional(),
   exampleSentence: z.string().optional(),
   notes: z.string().optional(),
   section: z.string().min(1, "Section is required"),
 }).refine(
-  (data) => data.translationOne || data.translationTwo,
-  "Either English or Bangla translation must be provided"
+  (data) => data.translation1 || data.translation2,
+  "At least one translation must be provided"
 );
 
 export async function POST(req: Request) {
@@ -31,11 +31,11 @@ export async function POST(req: Request) {
     const body = await req.json();
     const validatedData = wordSchema.parse(body);
 
-    // Check for duplicate (same germanWord AND same section for this user)
+    // Check for duplicate (same mainWord AND same section for this user)
     const existing = await db.select().from(words).where(
       and(
         eq(words.createdBy, session.user.id),
-        eq(words.germanWord, validatedData.germanWord),
+        eq(words.mainWord, validatedData.mainWord),
         eq(words.section, validatedData.section)
       )
     );
@@ -47,9 +47,9 @@ export async function POST(req: Request) {
     }
 
     const word = await db.insert(words).values({
-      germanWord: validatedData.germanWord,
-      translationOne: validatedData.translationOne,
-      translationTwo: validatedData.translationTwo,
+      mainWord: validatedData.mainWord,
+      translation1: validatedData.translation1,
+      translation2: validatedData.translation2,
       exampleSentence: validatedData.exampleSentence,
       notes: validatedData.notes,
       section: validatedData.section,
@@ -98,9 +98,9 @@ export async function GET(req: NextRequest) {
 
     const selectFields = {
       id: words.id,
-      germanWord: words.germanWord,
-      translationOne: words.translationOne,
-      translationTwo: words.translationTwo,
+      mainWord: words.mainWord,
+      translation1: words.translation1,
+      translation2: words.translation2,
       exampleSentence: words.exampleSentence,
       notes: words.notes,
       section: words.section,

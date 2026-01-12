@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
@@ -22,10 +22,12 @@ import {
 import { useRouter } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
 import { Copy } from "lucide-react";
+import { parseBatchWords } from "@/lib/languages";
+import type { UserLanguagePreferences } from "@/lib/languages";
 
 // Define the form schema
 const formSchema = z.object({
-  pattern: z.literal("german-bangla-english"),  // Only one pattern now
+  pattern: z.literal("default"),  // Only one pattern for now
   words: z.string().min(1, "Please enter some words"),
   section: z.string().min(1, "Section is required"),
 });
@@ -33,19 +35,12 @@ const formSchema = z.object({
 type FormValues = z.infer<typeof formSchema>;
 
 interface ParsedWord {
-  germanWord: string;
-  translationTwo: string;
-  translationOne: string;
+  mainWord: string;
+  translation2: string;
+  translation1: string;
   exampleSentence: string | null;
   section: string;
 }
-
-const patternInstructions = {
-  "german-bangla-english": {
-    example: "das Haus-বাড়ি-house-Das Haus ist groß",
-    description: "German word with article, followed by Bangla translation, English translation, and optional example sentence",
-  },
-};
 
 export function BatchAddForm() {
   const router = useRouter();
@@ -54,75 +49,60 @@ export function BatchAddForm() {
   const [parsedWords, setParsedWords] = useState<ParsedWord[]>([]);
   const [isAdding, setIsAdding] = useState(false);
   const [section, setSection] = useState("");
+  const [languagePrefs, setLanguagePrefs] = useState<UserLanguagePreferences | null>(null);
   const promptRef = useRef<HTMLSpanElement>(null);
+
+  useEffect(() => {
+    const fetchLanguagePreferences = async () => {
+      try {
+        const response = await fetch("/api/user/languages");
+        if (response.ok) {
+          const data = await response.json();
+          setLanguagePrefs(data);
+        }
+      } catch (error) {
+        console.error("Failed to fetch language preferences:", error);
+        setLanguagePrefs({
+          mainLanguage: "German",
+          translationLanguages: ["English", "Bangla"]
+        });
+      }
+    };
+    fetchLanguagePreferences();
+  }, []);
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      pattern: "german-bangla-english",
+      pattern: "default",
       words: "",
       section: "", 
     },
   });
 
-  const pattern = "german-bangla-english"; // Fixed pattern
+  const pattern = "default";
 
-  const parseWords = (text: string, currentPattern: FormValues["pattern"]) => {
-    setParseError(null);
-
-    // Split into lines and clean them
-    const lines = text
-      .split("\n")
-      .map(line => line.trim())
-      .filter(line => line.length > 0);
-
-    const words: ParsedWord[] = [];
-    const errors: string[] = [];
-
-    lines.forEach((line, index) => {
-      // Only accept format: word-word with no spaces
-      const parts = line.split("-");
-
-        if (parts.length < 3 || parts.length > 4) {
-        errors.push(
-          `Line ${index + 1}: Invalid format.\n` +
-          `Expected: "${patternInstructions["german-bangla-english"].example}"\n` +
-          `Got: "${line}"`
-        );
-        return;
-      }
-
-      // Validate that required parts are non-empty
-      if (!parts[0].trim() || !parts[1].trim() || !parts[2].trim()) {
-        errors.push(
-          `Line ${index + 1}: German word, Bangla translation, and English translation are required.\n` +
-          `Got: "${line}"`
-        );
-        return;
-      }
-
-      const [german, bangla, english, example = null] = parts;
-
-      words.push({
-        germanWord: german.trim(),
-        translationTwo: bangla.trim(),
-        translationOne: english.trim(),
-        exampleSentence: example ? example.trim() : null,
-        section: form.getValues("section"),
-      });
-    });
-
-    if (errors.length > 0) {
-      setParseError(errors.join("\n"));
+  const parseWords = (text: string) => {
+    if (!languagePrefs) return;
+    
+    const result = parseBatchWords(text, pattern, form.getValues("section"), languagePrefs);
+    
+    if (result.errors.length > 0) {
+      setParseError(result.errors.join("\n"));
       setParsedWords([]);
     } else {
-      setParsedWords(words);
+      setParsedWords(result.words as ParsedWord[]);
     }
   };
 
   const onSubmit = async (data: FormValues) => {
+    if (!languagePrefs) {
+      toast.error("Loading language preferences...");
+      return;
+    }
+
     if (parsedWords.length === 0) {
-      parseWords(data.words, data.pattern);
+      parseWords(data.words);
       if (parsedWords.length === 0) {
         return;
       }
@@ -131,10 +111,10 @@ export function BatchAddForm() {
     try {
       setIsAdding(true);
       // Prepare words with all fields including example sentence
-      const wordsToSubmit = parsedWords.map((word, index) => ({
-        germanWord: word.germanWord,
-        translationTwo: word.translationTwo,
-        translationOne: word.translationOne,
+      const wordsToSubmit = parsedWords.map((word) => ({
+        mainWord: word.mainWord,
+        translation2: word.translation2,
+        translation1: word.translation1,
         exampleSentence: word.exampleSentence,
         section: word.section
       }));
@@ -153,7 +133,7 @@ export function BatchAddForm() {
 
       toast.success(data.message || `Added ${parsedWords.length} words to section ${data.section}`);
       form.reset({
-        pattern: "german-bangla-english", // Keep the fixed pattern
+        pattern: "default",
         words: "",
         section: "",
       });
@@ -185,7 +165,17 @@ export function BatchAddForm() {
     setSection(value);
     form.setValue("section", value, { shouldValidate: true });
     // Re-parse words to update preview
-    parseWords(form.getValues("words"), pattern);
+    parseWords(form.getValues("words"));
+  };
+
+  if (!languagePrefs) {
+    return <div>Loading language preferences...</div>;
+  }
+
+  const getExampleFormat = () => {
+    const lang1 = languagePrefs.translationLanguages[0] || "Language 1";
+    const lang2 = languagePrefs.translationLanguages[1] || "Language 2";
+    return `${languagePrefs.mainLanguage} word-${lang2} translation-${lang1} translation-Example sentence`;
   };
 
   return (
@@ -201,14 +191,14 @@ export function BatchAddForm() {
               Enter words with their translations in the following format:
               <br />
                   <br />
-              <code className="text-sm">German word with article-Bangla translation-English translation-Example sentence</code>
+              <code className="text-sm">{getExampleFormat()}</code>
               <br /><br />
-              Example: {patternInstructions["german-bangla-english"].example}
+              Example: das Haus-বাড়ি-house-Das Haus ist groß
               <br /><br />
               Prompt: {" "}
               <span>"</span>
               <span ref={promptRef} className="">
-              Give me translation list of German words followed by Bangla and English translations in this exact format: German-বাংলা-English-Example Sentence. Use only two hyphens per line - (if there is example sentence matching in given text then three) one between German and Bangla, one between Bangla and English and last one between English and example sentence if there is any . Never use extra hyphens, dashes, or slashes inside any translation. Use simple, clean Bangla and English words. Example: Haus-বাড়ি-house-Das Haus ist groß. If a word refers to multiple meanings (like 'Eltern'), choose one clear equivalent. For nouns, always include the definite article (der, die, or das) with the word.
+              Give me translation list of {languagePrefs.mainLanguage} words followed by {languagePrefs.translationLanguages[1]} and {languagePrefs.translationLanguages[0]} translations in this exact format: {languagePrefs.mainLanguage}-{languagePrefs.translationLanguages[1]}-{languagePrefs.translationLanguages[0]}-Example Sentence. Use only two hyphens per line - (if there is example sentence matching in given text then three) one between {languagePrefs.mainLanguage} and {languagePrefs.translationLanguages[1]}, one between {languagePrefs.translationLanguages[1]} and {languagePrefs.translationLanguages[0]} and last one between {languagePrefs.translationLanguages[0]} and example sentence if there is any . Never use extra hyphens, dashes, or slashes inside any translation. Use simple, clean translations. Example: Haus-বাড়ি-house-Das Haus ist groß. If a word refers to multiple meanings, choose one clear equivalent. For nouns, always include the definite article (der, die, or das) with the word.
               </span>
               <span>"</span>
               <button
@@ -227,11 +217,11 @@ export function BatchAddForm() {
             <Label htmlFor="words">Words</Label>
             <Textarea
               id="words"
-              placeholder={`Enter words in format: ${patternInstructions[pattern].example}\nExample:\n${patternInstructions[pattern].example}`}
+              placeholder={`Enter words in format: ${getExampleFormat()}\nExample:\ndas Haus-বাড়ি-house-Das Haus ist groß`}
               className="font-mono"
               rows={6}
               {...form.register("words", {
-                onChange: (e) => parseWords(e.target.value, pattern),
+                onChange: (e) => parseWords(e.target.value),
               })}
             />
             <p className="text-sm text-muted-foreground">
@@ -256,9 +246,9 @@ export function BatchAddForm() {
               <CardContent>
                 <div className="rounded-md border">
                   <div className="grid grid-cols-5 gap-4 p-4 font-medium border-b">
-                    <div>German</div>
-                    <div>Bangla</div>
-                    <div>English</div>
+                    <div>{languagePrefs.mainLanguage}</div>
+                    <div>{languagePrefs.translationLanguages[1] || "Language 2"}</div>
+                    <div>{languagePrefs.translationLanguages[0] || "Language 1"}</div>
                     <div>Example</div>
                     <div>Section</div>
                   </div>
@@ -268,9 +258,9 @@ export function BatchAddForm() {
                         key={index}
                         className="grid grid-cols-5 gap-4 p-4 border-b last:border-0"
                       >
-                        <div>{word.germanWord}</div>
-                        <div>{word.translationTwo}</div>
-                        <div>{word.translationOne}</div>
+                        <div>{word.mainWord}</div>
+                        <div>{word.translation2}</div>
+                        <div>{word.translation1}</div>
                         <div>{word.exampleSentence || "-"}</div>
                         <div>{word.section}</div>
                       </div>

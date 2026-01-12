@@ -7,9 +7,9 @@ import { eq, and, sql, desc, inArray, notInArray } from "drizzle-orm";
 
 interface Word {
   id: string;
-  germanWord: string;
-  translationOne: string | null;
-  translationTwo: string | null;
+  mainWord: string;
+  translation1: string | null;
+  translation2: string | null;
   section: string;
 }
 
@@ -70,9 +70,9 @@ export async function POST(req: Request) {
           let query = db
             .select({
               id: words.id,
-              germanWord: words.germanWord,
-              translationOne: words.translationOne,
-              translationTwo: words.translationTwo,
+              mainWord: words.mainWord,
+              translation1: words.translation1,
+              translation2: words.translation2,
               section: words.section,
             })
             .from(words)
@@ -100,9 +100,9 @@ export async function POST(req: Request) {
         wordsToLearn = await db
           .select({
             id: words.id,
-            germanWord: words.germanWord,
-            translationOne: words.translationOne,
-            translationTwo: words.translationTwo,
+            mainWord: words.mainWord,
+            translation1: words.translation1,
+            translation2: words.translation2,
             section: words.section,
           })
           .from(words)
@@ -152,9 +152,9 @@ export async function POST(req: Request) {
           let query = db
             .select({
               id: words.id,
-              germanWord: words.germanWord,
-              translationOne: words.translationOne,
-              translationTwo: words.translationTwo,
+              mainWord: words.mainWord,
+              translation1: words.translation1,
+              translation2: words.translation2,
               section: words.section,
             })
             .from(words)
@@ -176,9 +176,9 @@ export async function POST(req: Request) {
         let query = db
           .select({
             id: words.id,
-            germanWord: words.germanWord,
-            translationOne: words.translationOne,
-            translationTwo: words.translationTwo,
+            mainWord: words.mainWord,
+            translation1: words.translation1,
+            translation2: words.translation2,
             section: words.section,
           })
           .from(words)
@@ -198,9 +198,9 @@ export async function POST(req: Request) {
         let query = db
           .select({
             id: words.id,
-            germanWord: words.germanWord,
-            translationOne: words.translationOne,
-            translationTwo: words.translationTwo,
+            mainWord: words.mainWord,
+            translation1: words.translation1,
+            translation2: words.translation2,
             section: words.section,
           })
           .from(words)
@@ -219,9 +219,9 @@ export async function POST(req: Request) {
         wordsToLearn = await db
           .select({
             id: words.id,
-            germanWord: words.germanWord,
-            translationOne: words.translationOne,
-            translationTwo: words.translationTwo,
+            mainWord: words.mainWord,
+            translation1: words.translation1,
+            translation2: words.translation2,
             section: words.section,
           })
           .from(words)

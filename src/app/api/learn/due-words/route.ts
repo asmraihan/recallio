@@ -34,9 +34,9 @@ export async function GET() {
     const wordsDue = await db
       .select({
         id: words.id,
-        germanWord: words.germanWord,
-        translationOne: words.translationOne,
-        translationTwo: words.translationTwo,
+        mainWord: words.mainWord,
+        translation1: words.translation1,
+        translation2: words.translation2,
         section: words.section,
       })
       .from(words)

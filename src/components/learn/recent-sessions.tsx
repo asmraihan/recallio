@@ -6,7 +6,8 @@ import { Loader2 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { useRouter } from "next/navigation";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { memo } from "react";
+import { memo, useEffect, useState } from "react";
+import type { UserLanguagePreferences } from "@/lib/languages";
 
 interface Session {
   id: string;
@@ -21,8 +22,47 @@ interface Session {
   sections?: number[];
 }
 
+/**
+ * Get direction label from direction code and language preferences
+ */
+function getDirectionLabel(direction: string, prefs: UserLanguagePreferences | null): string {
+  if (!prefs) return direction.replace(/_/g, " ").replace(/\b\w/g, (l) => l.toUpperCase());
+  
+  const main = prefs.mainLanguage;
+  const trans1 = prefs.translationLanguages[0] || "Language 1";
+  const trans2 = prefs.translationLanguages[1] || "Language 2";
+  
+  const labelMap: Record<string, string> = {
+    "main_to_trans1": `${main} → ${trans1}`,
+    "trans1_to_main": `${trans1} → ${main}`,
+    "main_to_trans2": `${main} → ${trans2}`,
+    "trans2_to_main": `${trans2} → ${main}`,
+  };
+  
+  return labelMap[direction] || direction.replace(/_/g, " ").replace(/\b\w/g, (l) => l.toUpperCase());
+}
+
 export function RecentSessions() {
   const router = useRouter();
+  const [languagePrefs, setLanguagePrefs] = useState<UserLanguagePreferences | null>(null);
+
+  // Fetch user language preferences on mount
+  useEffect(() => {
+    const fetchLanguagePreferences = async () => {
+      try {
+        const response = await fetch("/api/user/languages");
+        if (response.ok) {
+          const data = await response.json();
+          setLanguagePrefs(data);
+        }
+      } catch (error) {
+        console.error("Failed to fetch language preferences:", error);
+      }
+    };
+    
+    fetchLanguagePreferences();
+  }, []);
+
   const { data: sessions, isLoading } = useQuery<Session[]>({
     queryKey: ["recent-sessions"],
     queryFn: async () => {
@@ -83,7 +123,7 @@ export function RecentSessions() {
                   {session.type.charAt(0).toUpperCase() + session.type.slice(1)}
                 </span>
                 <span className="text-xs px-2 py-0.5 rounded bg-muted text-muted-foreground">
-                  {session.direction.replace(/_/g, " ").replace(/\b\w/g, (l) => l.toUpperCase())}
+                  {getDirectionLabel(session.direction, languagePrefs)}
                 </span>
                 {Array.isArray(session.sections) && session.sections.length > 0 ? (
                   <span className="text-xs px-2 py-0.5 rounded bg-primary/10 text-primary font-medium">

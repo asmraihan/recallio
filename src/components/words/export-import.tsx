@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -15,6 +15,8 @@ import { Label } from "@/components/ui/label";
 import { Download } from "lucide-react";
 import { toast } from "sonner";
 import { useQueryClient } from "@tanstack/react-query";
+import { getExportHeaders } from "@/lib/languages";
+import type { UserLanguagePreferences } from "@/lib/languages";
 
 import { Checkbox } from "@/components/ui/checkbox";
 
@@ -26,20 +28,38 @@ type ExportDialogProps = {
   allowAll?: boolean; // when true, show an "Export all" option
 };
 
-const columnLabels: Record<string, string> = {
-  germanWord: "German",
-  translationOne: "English",
-  translationTwo: "Bangla",
-  section: "Section",
-  exampleSentence: "Sentence",
-  notes: "Notes",
-  createdAt: "Created",
-  updatedAt: "Updated",
-};
-
 export function ExportDialog({ selectedIds, visibleColumns, section, totalWords = 0, allowAll = true }: ExportDialogProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [exportAll, setExportAll] = useState(false);
+  const [languagePrefs, setLanguagePrefs] = useState<UserLanguagePreferences | null>(null);
+
+  useEffect(() => {
+    const fetchLanguagePreferences = async () => {
+      try {
+        const response = await fetch("/api/user/languages");
+        if (response.ok) {
+          const data = await response.json();
+          setLanguagePrefs(data);
+        }
+      } catch (error) {
+        console.error("Failed to fetch language preferences:", error);
+        setLanguagePrefs({
+          mainLanguage: "German",
+          translationLanguages: ["English", "Bangla"]
+        });
+      }
+    };
+    fetchLanguagePreferences();
+  }, []);
+
+  const columnLabels = languagePrefs ? getExportHeaders(languagePrefs) : {
+    mainWord: "Main",
+    translation1: "Language 1",
+    translation2: "Language 2",
+    section: "Section",
+    exampleSentence: "Sentence",
+    notes: "Notes",
+  };
 
   const numSelected = Array.isArray(selectedIds) ? selectedIds.filter(Boolean).length : 0;
   const hasSelection = numSelected > 0;
@@ -165,7 +185,7 @@ export function ExportDialog({ selectedIds, visibleColumns, section, totalWords 
               <div className="mt-1 flex flex-wrap gap-1">
                 {visibleColumns?.map((col) => (
                   <span key={col} className="bg-background px-2 py-1 rounded">
-                    {columnLabels[col] || col}
+                    {columnLabels[col as keyof typeof columnLabels] || col}
                   </span>
                 ))}
               </div>

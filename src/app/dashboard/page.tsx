@@ -146,7 +146,7 @@ export default function LearnPage() {
                 {/* {dueWords && dueWords.length > 0 && (
                   <ul className="mt-2 text-xs text-muted-foreground max-h-32 overflow-y-auto">
                     {dueWords.slice(0, 8).map((word) => (
-                      <li key={word.id} className="truncate">{word.germanWord} ({word.translationOne || "?"})</li>
+                      <li key={word.id} className="truncate">{word.mainWord} ({word.translation1 || "?"})</li>
                     ))}
                     {dueWords.length > 8 && (
                       <li className="italic">...and {dueWords.length - 8} more</li>

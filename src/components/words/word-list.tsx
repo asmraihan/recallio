@@ -14,13 +14,15 @@ import {
   ColumnDef,
 } from "@tanstack/react-table";
 import { useTranslation } from "@/hooks/use-translation-cache";
+import { getLanguageLabels } from "@/lib/languages";
+import type { UserLanguagePreferences } from "@/lib/languages";
 
 // Match the database schema
 interface Word {
   id: string;
-  germanWord: string;
-  translationOne: string | null;
-  translationTwo: string | null;
+  mainWord: string;
+  translation1: string | null;
+  translation2: string | null;
   exampleSentence: string | null;
   notes: string | null;
   section: string;
@@ -54,13 +56,33 @@ export function WordList({ words, rowSelection: rowSelectionProp, onRowSelection
   const [isAutoplayOn, setIsAutoplayOn] = useState(false);
   const [internalRowSelection, setInternalRowSelection] = useState<Record<string, boolean>>({});
   const [internalColumnVisibility, setInternalColumnVisibility] = useState<Record<string, boolean>>({
-    germanWord: true,
-    translationOne: true,
-    translationTwo: true,
+    mainWord: true,
+    translation1: true,
+    translation2: true,
     section: true,
     exampleSentence: true,
     actions: true,
   });
+  const [languagePrefs, setLanguagePrefs] = useState<UserLanguagePreferences | null>(null);
+
+  useEffect(() => {
+    const fetchLanguagePreferences = async () => {
+      try {
+        const response = await fetch("/api/user/languages");
+        if (response.ok) {
+          const data = await response.json();
+          setLanguagePrefs(data);
+        }
+      } catch (error) {
+        console.error("Failed to fetch language preferences:", error);
+        setLanguagePrefs({
+          mainLanguage: "German",
+          translationLanguages: ["English", "Bangla"]
+        });
+      }
+    };
+    fetchLanguagePreferences();
+  }, []);
   // Remove local important state, rely on words prop
 
   async function handleDelete(id: string) {
@@ -223,31 +245,31 @@ export function WordList({ words, rowSelection: rowSelectionProp, onRowSelection
       enableHiding: false,
     },
     {
-      accessorKey: "germanWord",
-      header: "German",
+      accessorKey: "mainWord",
+      header: languagePrefs?.mainLanguage || "Main",
       cell: ({ row }: any) => (
         <div className="flex items-center gap-2">
           <Button
             variant="ghost"
             size="icon"
             className="h-6 w-6"
-            onClick={() => playTTS(row.original.germanWord)}
+            onClick={() => playTTS(row.original.mainWord)}
             disabled={ttsLoading}
           >
             <Volume2 className="h-3 w-3" />
           </Button>
-          {row.original.germanWord}
+          {row.original.mainWord}
         </div>
       ),
     },
     {
-      accessorKey: "translationOne",
-      header: "English",
+      accessorKey: "translation1",
+      header: languagePrefs?.translationLanguages[0] || "Language 1",
       cell: (info: any) => info.getValue() || <span className="text-muted-foreground">N/A</span>,
     },
     {
-      accessorKey: "translationTwo",
-      header: "Bangla",
+      accessorKey: "translation2",
+      header: languagePrefs?.translationLanguages[1] || "Language 2",
       cell: (info: any) => info.getValue() || <span className="text-muted-foreground">N/A</span>,
     },
     {
@@ -406,10 +428,10 @@ export function WordList({ words, rowSelection: rowSelectionProp, onRowSelection
               {/* Main word panel */}
               <div className="flex flex-col items-center gap-2 p-4 rounded-lg bg-primary/2 border border-primary/10">
                 <div className="flex justify-between items-center w-full">
-                     <Button variant="ghost" size="icon" onClick={() => playTTS(words[viewIndex].germanWord)} disabled={ttsLoading}>
+                     <Button variant="ghost" size="icon" onClick={() => playTTS(words[viewIndex].mainWord)} disabled={ttsLoading}>
                     <Volume2 className={ttsLoading ? "animate-pulse h-5 w-5" : "h-5 w-5"} />
                   </Button>
-                  <span className="text-2xl font-semibold text-primary">{words[viewIndex]?.germanWord || <span className="text-muted-foreground">N/A</span>}</span>
+                  <span className="text-2xl font-semibold text-primary">{words[viewIndex]?.mainWord || <span className="text-muted-foreground">N/A</span>}</span>
                
                   <button
                     onClick={() => handleMarkImportant(words[viewIndex].id)}
@@ -429,10 +451,12 @@ export function WordList({ words, rowSelection: rowSelectionProp, onRowSelection
               {/* Translations */}
               <div className="grid grid-cols-2 gap-4">
                 <div className="flex flex-col items-center px-3  py-2  rounded-lg bg-muted/50">
-                  <span className="mt-1 text-lg ">{words[viewIndex] && words[viewIndex].translationOne || <span className="text-muted-foreground">N/A</span>}</span>
+                  <span className="text-xs font-semibold text-muted-foreground">{languagePrefs?.translationLanguages[0] || "Language 1"}</span>
+                  <span className="mt-1 text-lg ">{words[viewIndex] && words[viewIndex].translation1 || <span className="text-muted-foreground">N/A</span>}</span>
                 </div>
                 <div className="flex flex-col items-center px-3 py-2 rounded-lg bg-muted/50">
-                  <span className="mt-1 text-lg ">{words[viewIndex] && words[viewIndex].translationTwo || <span className="text-muted-foreground">N/A</span>}</span>
+                  <span className="text-xs font-semibold text-muted-foreground">{languagePrefs?.translationLanguages[1] || "Language 2"}</span>
+                  <span className="mt-1 text-lg ">{words[viewIndex] && words[viewIndex].translation2 || <span className="text-muted-foreground">N/A</span>}</span>
                 </div>
               </div>
 

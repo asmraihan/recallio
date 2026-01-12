@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { useQuery } from "@tanstack/react-query";
@@ -27,6 +27,7 @@ import { toast } from "sonner";
 import { MultiSelect } from "@/components/multi-select";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Input } from "@/components/ui/input";
+import type { UserLanguagePreferences } from "@/lib/languages";
 
 type SessionMode = "review" | "new" | "mistakes" | "custom" | "important" | "randomized";
 
@@ -40,7 +41,9 @@ export function StartSessionDialog({ children, mode = "new" }: StartSessionDialo
   const { data: session } = useSession();
   const [open, setOpen] = useState(false);
   const [sessionType, setSessionType] = useState<SessionMode>(mode);
-  const [direction, setDirection] = useState("german_to_english");
+  const [direction, setDirection] = useState<string>("");
+  const [languagePrefs, setLanguagePrefs] = useState<UserLanguagePreferences | null>(null);
+  const [directionOptions, setDirectionOptions] = useState<Array<{value: string; label: string}>>([]);
   // MultiSelect returns string[]; store as string[] in state
   const [section, setSection] = useState<string[]>([]);
   const [sectionError, setSectionError] = useState<string | null>(null);
@@ -48,6 +51,38 @@ export function StartSessionDialog({ children, mode = "new" }: StartSessionDialo
   const [customMode, setCustomMode] = useState<"randomized" | "mistakes" | "important">("randomized");
   const [customWordCount, setCustomWordCount] = useState<string>("");
   const [selectAll, setSelectAll] = useState(false);
+
+  // Fetch user language preferences
+  useEffect(() => {
+    const fetchLanguagePreferences = async () => {
+      try {
+        const response = await fetch("/api/user/languages");
+        if (response.ok) {
+          const data = await response.json();
+          setLanguagePrefs(data);
+          
+          // Generate direction options from language preferences
+          const main = data.mainLanguage;
+          const trans1 = data.translationLanguages[0] || "Language 1";
+          const trans2 = data.translationLanguages[1] || "Language 2";
+          
+          const options = [
+            { value: "main_to_trans1", label: `${main} → ${trans1}` },
+            { value: "trans1_to_main", label: `${trans1} → ${main}` },
+            { value: "main_to_trans2", label: `${main} → ${trans2}` },
+            { value: "trans2_to_main", label: `${trans2} → ${main}` },
+          ];
+          
+          setDirectionOptions(options);
+          setDirection(options[0].value);
+        }
+      } catch (error) {
+        console.error("Failed to fetch language preferences:", error);
+      }
+    };
+    
+    fetchLanguagePreferences();
+  }, []);
 
   // Fetch available sections
   const { data: sectionsData, isLoading: isLoadingSections } = useQuery({
@@ -214,13 +249,12 @@ export function StartSessionDialog({ children, mode = "new" }: StartSessionDialo
               <SelectTrigger id="direction">
                 <SelectValue placeholder="Select learning direction" />
               </SelectTrigger>
-              <SelectContent
-              className="max-w-md"
-              >
-                <SelectItem value="german_to_english">German → English</SelectItem>
-                <SelectItem value="english_to_german">English → German</SelectItem>
-                <SelectItem value="german_to_bangla">German → Bangla</SelectItem>
-                <SelectItem value="bangla_to_german">Bangla → German</SelectItem>
+              <SelectContent className="max-w-md">
+                {directionOptions.map((option) => (
+                  <SelectItem key={option.value} value={option.value}>
+                    {option.label}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
           </div>

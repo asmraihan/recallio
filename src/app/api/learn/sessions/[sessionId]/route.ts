@@ -43,9 +43,9 @@ export async function GET(
     const wordDetails = await db
       .select({
         id: words.id,
-        germanWord: words.germanWord,
-        translationOne: words.translationOne,
-        translationTwo: words.translationTwo,
+        mainWord: words.mainWord,
+        translation1: words.translation1,
+        translation2: words.translation2,
         exampleSentence: words.exampleSentence,
         notes: words.notes,
         section: words.section,

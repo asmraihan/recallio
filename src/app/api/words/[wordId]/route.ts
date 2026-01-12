@@ -7,15 +7,15 @@ import { words } from "@/lib/db/schema";
 import { z } from "zod";
 
 const wordSchema = z.object({
-  germanWord: z.string().min(1, "German word is required"),
-  translationOne: z.string().optional(),
-  translationTwo: z.string().optional(),
+  mainWord: z.string().min(1, "Main word is required"),
+  translation1: z.string().optional(),
+  translation2: z.string().optional(),
   exampleSentence: z.string().optional(),
   notes: z.string().optional(),
   section: z.string().min(1, "Section is required"),
 }).refine(
-  (data) => data.translationOne || data.translationTwo,
-  "Either English or Bangla translation must be provided"
+  (data) => data.translation1 || data.translation2,
+  "Either first or second translation must be provided"
 );
 
 

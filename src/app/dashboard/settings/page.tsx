@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -9,12 +9,90 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Trash2, AlertTriangle } from "lucide-react";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
+import { SUPPORTED_LANGUAGES, type UserLanguagePreferences } from "@/lib/languages";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
 
 export default function SettingsPage() {
   const router = useRouter();
   const [isDeleteSessionsDialogOpen, setIsDeleteSessionsDialogOpen] = useState(false);
   const [isDeleteWordsDialogOpen, setIsDeleteWordsDialogOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [languagePrefs, setLanguagePrefs] = useState<UserLanguagePreferences | null>(null);
+  const [isLoadingLanguages, setIsLoadingLanguages] = useState(true);
+  const [isSavingLanguages, setIsSavingLanguages] = useState(false);
+  const [mainLanguage, setMainLanguage] = useState("");
+  const [translationLang1, setTranslationLang1] = useState("");
+  const [translationLang2, setTranslationLang2] = useState("");
+
+  useEffect(() => {
+    const fetchLanguagePreferences = async () => {
+      try {
+        const response = await fetch("/api/user/languages");
+        if (response.ok) {
+          const data = await response.json();
+          setLanguagePrefs(data);
+          setMainLanguage(data.mainLanguage);
+          setTranslationLang1(data.translationLanguages[0] || "");
+          setTranslationLang2(data.translationLanguages[1] || "");
+        }
+      } catch (error) {
+        console.error("Failed to fetch language preferences:", error);
+        toast.error("Failed to load language preferences");
+      } finally {
+        setIsLoadingLanguages(false);
+      }
+    };
+    fetchLanguagePreferences();
+  }, []);
+
+  const handleSaveLanguagePreferences = async () => {
+    if (!mainLanguage || !translationLang1 || !translationLang2) {
+      toast.error("Please select all languages");
+      return;
+    }
+
+    if (mainLanguage === translationLang1 || mainLanguage === translationLang2 || translationLang1 === translationLang2) {
+      toast.error("Please select different languages");
+      return;
+    }
+
+    setIsSavingLanguages(true);
+    try {
+      const response = await fetch("/api/user/languages", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          mainLanguage,
+          translationLanguages: [translationLang1, translationLang2],
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to save language preferences");
+      }
+
+      const data = await response.json();
+      setLanguagePrefs({
+        mainLanguage: data.mainLanguage,
+        translationLanguages: data.translationLanguages,
+      });
+      toast.success("Language preferences updated successfully");
+      router.refresh();
+    } catch (error) {
+      console.error("Error saving language preferences:", error);
+      toast.error("Failed to save language preferences");
+    } finally {
+      setIsSavingLanguages(false);
+    }
+  };
 
   const handleDeleteSessions = async () => {
     setIsDeleting(true);
@@ -60,11 +138,103 @@ export default function SettingsPage() {
 
   return (
     <div className="container mx-auto p-4">
-      <Tabs defaultValue="profile" className="w-full">
+      <Tabs defaultValue="languages" className="w-full">
         <TabsList className="mb-4">
+          <TabsTrigger value="languages">Languages</TabsTrigger>
           <TabsTrigger value="profile">Profile</TabsTrigger>
           <TabsTrigger value="danger">Account Reset</TabsTrigger>
         </TabsList>
+
+        <TabsContent value="languages">
+          <Card>
+            <CardHeader>
+              <CardTitle>Language Preferences</CardTitle>
+              <CardDescription>
+                Configure which languages you want to learn with
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {isLoadingLanguages ? (
+                <div className="text-center py-4 text-muted-foreground">Loading language preferences...</div>
+              ) : (
+                <div className="space-y-6">
+                  <div className="space-y-2">
+                    <Label htmlFor="mainLanguage">Main Language (the language you're learning)</Label>
+                    <Select value={mainLanguage} onValueChange={setMainLanguage}>
+                      <SelectTrigger id="mainLanguage">
+                        <SelectValue placeholder="Select main language" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {SUPPORTED_LANGUAGES.map((lang) => (
+                          <SelectItem key={lang} value={lang}>
+                            {lang}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <p className="text-sm text-muted-foreground">
+                      This is the language you're learning (e.g., German if you're learning German)
+                    </p>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="translationLang1">First Translation Language</Label>
+                    <Select value={translationLang1} onValueChange={setTranslationLang1}>
+                      <SelectTrigger id="translationLang1">
+                        <SelectValue placeholder="Select first translation language" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {SUPPORTED_LANGUAGES.map((lang) => (
+                          <SelectItem key={lang} value={lang}>
+                            {lang}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <p className="text-sm text-muted-foreground">
+                      The first translation language for vocabulary entries
+                    </p>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="translationLang2">Second Translation Language</Label>
+                    <Select value={translationLang2} onValueChange={setTranslationLang2}>
+                      <SelectTrigger id="translationLang2">
+                        <SelectValue placeholder="Select second translation language" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {SUPPORTED_LANGUAGES.map((lang) => (
+                          <SelectItem key={lang} value={lang}>
+                            {lang}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <p className="text-sm text-muted-foreground">
+                      The second translation language for vocabulary entries (optional but recommended)
+                    </p>
+                  </div>
+
+                  <Button 
+                    onClick={handleSaveLanguagePreferences} 
+                    disabled={isSavingLanguages}
+                    className="w-full"
+                  >
+                    {isSavingLanguages ? "Saving..." : "Save Language Preferences"}
+                  </Button>
+
+                  {languagePrefs && (
+                    <div className="bg-muted/50 p-4 rounded-lg text-sm">
+                      <p><strong>Current Settings:</strong></p>
+                      <p>Main Language: <strong>{languagePrefs.mainLanguage}</strong></p>
+                      <p>Translation Languages: <strong>{languagePrefs.translationLanguages.join(", ")}</strong></p>
+                    </div>
+                  )}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
 
         <TabsContent value="profile">
           <Card>
