@@ -10,6 +10,8 @@ export const users = pgTable('users', {
   // Language preferences
   mainLanguage: text('main_language').notNull().default('German'),
   translationLanguages: jsonb('translation_languages').default(['English', 'Bangla']),
+  // Voice preference for TTS
+  preferredVoice: text('preferred_voice').default('de-DE-AmalaNeural'),
   createdAt: timestamp('created_at').defaultNow(),
   updatedAt: timestamp('updated_at').defaultNow(),
 });

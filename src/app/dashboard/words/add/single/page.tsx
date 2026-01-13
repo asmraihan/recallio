@@ -3,7 +3,7 @@ import { AddWordForm } from "@/components/words/add-word-form";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
 export const metadata: Metadata = {
-  title: "Add Single Word | Recallio",
+  title: "Add Single Word | Recall",
   description: "Add a new word to your vocabulary collection",
 };
 

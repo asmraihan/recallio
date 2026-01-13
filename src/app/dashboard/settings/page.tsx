@@ -19,6 +19,7 @@ import {
 } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
+import { VoiceCombobox, type Voice } from "@/components/ui/voice-combobox";
 
 export default function SettingsPage() {
   const router = useRouter();
@@ -31,6 +32,10 @@ export default function SettingsPage() {
   const [mainLanguage, setMainLanguage] = useState("");
   const [translationLang1, setTranslationLang1] = useState("");
   const [translationLang2, setTranslationLang2] = useState("");
+  const [voices, setVoices] = useState<Voice[]>([]);
+  const [isLoadingVoices, setIsLoadingVoices] = useState(true);
+  const [preferredVoice, setPreferredVoice] = useState("");
+  const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
     const fetchLanguagePreferences = async () => {
@@ -53,7 +58,39 @@ export default function SettingsPage() {
     fetchLanguagePreferences();
   }, []);
 
-  const handleSaveLanguagePreferences = async () => {
+  useEffect(() => {
+    const fetchVoices = async () => {
+      try {
+        const response = await fetch("/api/tts");
+        if (response.ok) {
+          const data = await response.json();
+          setVoices(data.voices);
+        }
+      } catch (error) {
+        console.error("Failed to fetch voices:", error);
+        toast.error("Failed to load available voices");
+      } finally {
+        setIsLoadingVoices(false);
+      }
+    };
+
+    const fetchUserVoicePreference = async () => {
+      try {
+        const response = await fetch("/api/user/voice");
+        if (response.ok) {
+          const data = await response.json();
+          setPreferredVoice(data.preferredVoice || "");
+        }
+      } catch (error) {
+        console.error("Failed to fetch user voice preference:", error);
+      }
+    };
+
+    fetchVoices();
+    fetchUserVoicePreference();
+  }, []);
+
+  const handleSavePreferences = async () => {
     if (!mainLanguage || !translationLang1 || !translationLang2) {
       toast.error("Please select all languages");
       return;
@@ -64,33 +101,46 @@ export default function SettingsPage() {
       return;
     }
 
-    setIsSavingLanguages(true);
+    setIsSaving(true);
     try {
-      const response = await fetch("/api/user/languages", {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          mainLanguage,
-          translationLanguages: [translationLang1, translationLang2],
+      const [languageResponse, voiceResponse] = await Promise.all([
+        fetch("/api/user/languages", {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            mainLanguage,
+            translationLanguages: [translationLang1, translationLang2],
+          }),
         }),
-      });
+        preferredVoice ? fetch("/api/user/voice", {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            preferredVoice,
+          }),
+        }) : Promise.resolve({ ok: true }),
+      ]);
 
-      if (!response.ok) {
+      if (!languageResponse.ok) {
         throw new Error("Failed to save language preferences");
       }
 
-      const data = await response.json();
+      if (!voiceResponse.ok) {
+        throw new Error("Failed to save voice preference");
+      }
+
+      const data = await languageResponse.json();
       setLanguagePrefs({
         mainLanguage: data.mainLanguage,
         translationLanguages: data.translationLanguages,
       });
-      toast.success("Language preferences updated successfully");
+      toast.success("Preferences updated successfully");
       router.refresh();
     } catch (error) {
-      console.error("Error saving language preferences:", error);
-      toast.error("Failed to save language preferences");
+      console.error("Error saving preferences:", error);
+      toast.error("Failed to save preferences");
     } finally {
-      setIsSavingLanguages(false);
+      setIsSaving(false);
     }
   };
 
@@ -177,6 +227,7 @@ export default function SettingsPage() {
                     </p>
                   </div>
 
+
                   <div className="space-y-2">
                     <Label htmlFor="translationLang1">First Translation Language</Label>
                     <Select value={translationLang1} onValueChange={setTranslationLang1}>
@@ -215,12 +266,29 @@ export default function SettingsPage() {
                     </p>
                   </div>
 
+                  <div className="space-y-2">
+                    <Label htmlFor="preferredVoice">Preferred Voice (for pronunciation)</Label>
+                    {isLoadingVoices ? (
+                      <div className="text-sm text-muted-foreground">Loading voices...</div>
+                    ) : (
+                      <VoiceCombobox
+                        voices={voices}
+                        value={preferredVoice}
+                        onSelect={setPreferredVoice}
+                        isLoading={isLoadingVoices}
+                      />
+                    )}
+                    <p className="text-sm text-muted-foreground">
+                      Select the voice used for text-to-speech pronunciation in learning sessions
+                    </p>
+                  </div>
+
                   <Button 
-                    onClick={handleSaveLanguagePreferences} 
-                    disabled={isSavingLanguages}
+                    onClick={handleSavePreferences} 
+                    disabled={isSaving}
                     className="w-full"
                   >
-                    {isSavingLanguages ? "Saving..." : "Save Language Preferences"}
+                    {isSaving ? "Saving..." : "Save Preferences"}
                   </Button>
 
                   {languagePrefs && (
@@ -228,6 +296,7 @@ export default function SettingsPage() {
                       <p><strong>Current Settings:</strong></p>
                       <p>Main Language: <strong>{languagePrefs.mainLanguage}</strong></p>
                       <p>Translation Languages: <strong>{languagePrefs.translationLanguages.join(", ")}</strong></p>
+                      <p>Preferred Voice: <strong>{preferredVoice || "Default"}</strong></p>
                     </div>
                   )}
                 </div>

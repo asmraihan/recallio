@@ -64,6 +64,7 @@ export function WordList({ words, rowSelection: rowSelectionProp, onRowSelection
     actions: true,
   });
   const [languagePrefs, setLanguagePrefs] = useState<UserLanguagePreferences | null>(null);
+  const [preferredVoice, setPreferredVoice] = useState<string>("de-DE-AmalaNeural");
 
   useEffect(() => {
     const fetchLanguagePreferences = async () => {
@@ -82,6 +83,21 @@ export function WordList({ words, rowSelection: rowSelectionProp, onRowSelection
       }
     };
     fetchLanguagePreferences();
+  }, []);
+
+  useEffect(() => {
+    const fetchVoicePreference = async () => {
+      try {
+        const response = await fetch("/api/user/voice");
+        if (response.ok) {
+          const data = await response.json();
+          setPreferredVoice(data.preferredVoice || "de-DE-AmalaNeural");
+        }
+      } catch (error) {
+        console.error("Failed to fetch voice preference:", error);
+      }
+    };
+    fetchVoicePreference();
   }, []);
   // Remove local important state, rely on words prop
 
@@ -157,7 +173,7 @@ export function WordList({ words, rowSelection: rowSelectionProp, onRowSelection
       const response = await fetch('/api/tts', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text }),
+        body: JSON.stringify({ text, voice: preferredVoice }),
       });
 
       if (!response.ok) {

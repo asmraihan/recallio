@@ -100,7 +100,7 @@ export function ExportDialog({ selectedIds, visibleColumns, section, totalWords 
       const contentDisposition = response.headers.get("Content-Disposition");
       const filename = contentDisposition
         ? contentDisposition.split("filename=")[1].replace(/"/g, "")
-        : "recallio-words.csv";
+        : "recall-words.csv";
       const blob = await response.blob();
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement("a");

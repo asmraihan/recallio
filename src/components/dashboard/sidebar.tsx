@@ -28,7 +28,7 @@ export function Sidebar() {
         <div className="flex h-[52px] items-center border-b px-4">
           <Link href="/dashboard" className="flex items-center gap-2 font-semibold">
             <GraduationCap className="h-6 w-6" />
-            <span>Recallio</span>
+            <span>Recall</span>
           </Link>
         </div>
         <div className="flex-1 overflow-auto py-2">

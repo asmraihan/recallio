@@ -1,4 +1,4 @@
-# Recallio - Language Learning Platform
+# Recall - Language Learning Platform
 
 A modern language learning platform focused on German-English-Bangla translations, built with Next.js, TypeScript, and PostgreSQL.
 
@@ -54,8 +54,8 @@ NODE_ENV="development"
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/yourusername/recallio.git
-   cd recallio
+   git clone https://github.com/yourusername/recall.git
+   cd recall
    ```
 
 2. Install dependencies:

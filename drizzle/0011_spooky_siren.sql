@@ -1,0 +1,1 @@
+ALTER TABLE "users" ALTER COLUMN "preferred_voice" SET DEFAULT 'de-DE-AmalaNeural';

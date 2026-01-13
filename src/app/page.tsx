@@ -9,7 +9,7 @@ export default function Home() {
         <div className="container flex h-14 items-center px-5">
           <div className="mr-4 flex">
             <Link href="/" className="mr-6 flex items-center space-x-2">
-              <span className="font-bold">Recallio</span>
+              <span className="font-bold">Recall</span>
             </Link>
           </div>
           <div className="flex flex-1 items-center justify-end space-x-2">

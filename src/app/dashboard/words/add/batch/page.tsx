@@ -3,7 +3,7 @@ import { BatchAddForm } from "@/components/words/batch-add-form";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
 export const metadata: Metadata = {
-  title: "Batch Add Words | Recallio",
+  title: "Batch Add Words | Recall",
   description: "Add multiple words to your vocabulary collection at once",
 };
 

@@ -76,7 +76,7 @@ export async function POST(req: Request) {
     response.headers.set("Content-Type", "text/csv");
     response.headers.set(
       "Content-Disposition",
-      `attachment; filename="recallio-words-${new Date().toISOString().split("T")[0]}.csv"`
+      `attachment; filename="recall-words-${new Date().toISOString().split("T")[0]}.csv"`
     );
 
     return response;

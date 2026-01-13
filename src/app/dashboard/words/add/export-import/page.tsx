@@ -4,7 +4,7 @@ import { ExportDialog, ImportDialog } from "@/components/words/export-import";
 import { Download, Upload } from "lucide-react";
 
 export const metadata: Metadata = {
-  title: "Export/Import Words | Recallio",
+  title: "Export/Import Words | Recall",
   description: "Export your words to CSV or import words from a CSV file",
 };
 

@@ -65,7 +65,24 @@ export default function LearningSessionPage() {
   const [ttsAudio, setTtsAudio] = useState<HTMLAudioElement | null>(null);
   const [ttsVoices, setTtsVoices] = useState<any[]>([]);
   const [ttsVoice, setTtsVoice] = useState<string>("de-DE-AmalaNeural");
+  const [preferredVoice, setPreferredVoice] = useState<string>("de-DE-AmalaNeural");
   let longPressTimer: NodeJS.Timeout | null = null;
+
+  // Fetch user voice preference on mount
+  useEffect(() => {
+    const fetchVoicePreference = async () => {
+      try {
+        const res = await fetch("/api/user/voice");
+        if (res.ok) {
+          const data = await res.json();
+          setPreferredVoice(data.preferredVoice || "de-DE-AmalaNeural");
+        }
+      } catch {
+        // fallback to default
+      }
+    };
+    fetchVoicePreference();
+  }, []);
 
   // Fetch voices for picker (on demand)
   const fetchVoices = async () => {
@@ -85,7 +102,7 @@ export default function LearningSessionPage() {
       const response = await fetch('/api/tts', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text }),
+        body: JSON.stringify({ text, voice: preferredVoice }),
       });
 
       if (!response.ok) {

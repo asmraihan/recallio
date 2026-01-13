@@ -5,7 +5,7 @@ import { Plus, Upload, Download } from "lucide-react";
 import Link from "next/link";
 
 export const metadata: Metadata = {
-  title: "Add Words | Recallio",
+  title: "Add Words | Recall",
   description: "Add words to your vocabulary collection",
 };
 
